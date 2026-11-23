@@ -1,0 +1,167 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dashboard — F1-style skin (loaded after the page's own styles + f1-theme.css)
+   Visual only: every tool keeps its markup and behaviour.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+body[data-page="dashboard"] { --dash-radius: 8px; }
+body[data-page="dashboard"] .page { max-width: 1400px; padding: 20px 24px 40px; gap: 24px; }
+
+/* ── Masthead ─────────────────────────────────────────────────────────────── */
+.masthead { align-items: center; border-bottom: 0; padding: 6px 0 0; flex-wrap: wrap; gap: 12px; }
+.identity { gap: 14px; }
+.identity .flag { display: none; }
+.identity .name { font: 900 clamp(22px, 2.6vw, 34px)/1.05 'Formula1 Wide', 'Formula1', sans-serif; text-transform: uppercase; letter-spacing: 0; }
+.identity .role { font: 600 13px 'Titillium Web', sans-serif; color: var(--f1-text-2); border-left-color: rgba(255,255,255,.18); }
+.masthead-right { flex-wrap: wrap; gap: 10px; }
+.status-pill {
+  border-radius: 1000px !important; padding: 6px 14px !important; background: transparent !important;
+  font: 700 12px 'Titillium Web', sans-serif !important; letter-spacing: .03em !important;
+}
+.logout-link {
+  border: 1px solid rgba(255,255,255,.22) !important; border-radius: 1000px; padding: 6px 14px !important;
+  font: 700 12px 'Titillium Web', sans-serif !important; letter-spacing: .02em !important; text-decoration: none !important; color: #fff !important;
+}
+.logout-link:hover { border-color: #fff !important; }
+.team-switch { border-radius: 1000px !important; }
+
+/* ── Layout + sidebar ─────────────────────────────────────────────────────── */
+.dash-body { grid-template-columns: 240px minmax(0, 1fr); gap: 28px; }
+.dash-side { top: 72px; background: var(--f1-card) !important; border: 1px solid var(--f1-line) !important; border-radius: var(--dash-radius) !important; padding: 10px !important; }
+.dash-nav { gap: 2px !important; }
+.dash-nav button {
+  border-radius: 6px; border-left: 0 !important; position: relative;
+  font: 600 14px 'Titillium Web', sans-serif !important; text-transform: none !important; letter-spacing: 0 !important;
+  color: var(--f1-text-2) !important; padding: 10px 12px !important;
+}
+.dash-nav button:hover { background: rgba(255,255,255,.05) !important; color: #fff !important; }
+.dash-nav button.active { background: rgba(255,255,255,.08) !important; color: #fff !important; font-weight: 700 !important; }
+.dash-nav button.active::before { content: ""; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 4px; border-radius: 0 3px 3px 0; background: var(--f1-red); }
+.dash-nav button .nav-badge { background: var(--f1-red) !important; border-radius: 1000px !important; font: 700 11px 'Titillium Web', sans-serif !important; }
+.dash-main { gap: 28px; }
+
+/* ── Section headings ─────────────────────────────────────────────────────── */
+.section-head { border-bottom: 0; padding-bottom: 0; margin-bottom: 16px; gap: 0; }
+.section-head-mark { display: none; }
+.section-head-num {
+  font: 700 12px 'Titillium Web', sans-serif !important; letter-spacing: .04em !important;
+  color: var(--f1-red-hot) !important; margin-bottom: 4px;
+}
+.section-head h2 { font: 700 clamp(20px, 1.8vw, 26px)/1.15 'Formula1', sans-serif !important; letter-spacing: 0 !important; text-transform: uppercase; }
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+.tool-card, .ov-card, .ov-stat-card, .scout-card, .readout, .modal, .login-card {
+  background: var(--f1-card) !important; border: 1px solid var(--f1-line) !important; border-radius: var(--dash-radius) !important;
+}
+.tool-card { padding: 20px 22px; }
+.tool-card + .tool-card { margin-top: 16px; }
+.tool-card h3, .ov-card-title, .modal-title {
+  font: 700 15px 'Formula1', sans-serif !important; text-transform: uppercase; letter-spacing: 0 !important; color: #fff !important;
+}
+.tool-card h3::before, .attr-head::before { width: 4px !important; height: 16px !important; border-radius: 2px; transform: none !important; background: var(--f1-red) !important; }
+.ov-stat-card .v, .readout .value, .scout-stat .v { font-family: 'Formula1', sans-serif !important; }
+.ov-stat-card .k, .readout .caption, .scout-stat .l, .k, .caption {
+  font-family: 'Titillium Web', sans-serif !important; letter-spacing: .03em !important;
+}
+.muted { color: var(--f1-text-3); }
+
+/* ── Buttons: F1 pills instead of slanted blocks ──────────────────────────── */
+.action {
+  transform: none !important; border-radius: 1000px !important; padding: 10px 20px !important;
+  font: 700 14px 'Titillium Web', sans-serif !important; text-transform: none !important; letter-spacing: .01em !important;
+  background: transparent !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.28) !important; color: #fff !important;
+}
+.action > span { transform: none !important; }
+.action:hover { box-shadow: inset 0 0 0 1px #fff !important; background: rgba(255,255,255,.05) !important; }
+.action-lead { background: var(--f1-red) !important; box-shadow: none !important; }
+.action-lead:hover { background: var(--f1-red-hot) !important; box-shadow: none !important; filter: none; }
+.action-quiet { background: transparent !important; }
+.action-compact { padding: 7px 15px !important; font-size: 13px !important; }
+.action:disabled { opacity: .4; }
+
+/* ── Forms ────────────────────────────────────────────────────────────────── */
+.field label {
+  font: 700 12px 'Titillium Web', sans-serif !important; letter-spacing: .02em !important; text-transform: none !important; color: var(--f1-text-2) !important;
+}
+.field input, .field select, .field textarea, .tagpick,
+.dash-main input[type="text"], .dash-main input[type="number"], .dash-main input[type="search"], .dash-main input[type="date"], .dash-main input[type="password"], .dash-main select, .dash-main textarea {
+  background: #15151e !important; border: 1px solid rgba(255,255,255,.16) !important; border-radius: 6px !important;
+  color: #fff !important; font-family: 'Titillium Web', sans-serif !important; font-size: 14px !important;
+}
+.field input:focus, .field select:focus, .field textarea:focus,
+.dash-main input:focus, .dash-main select:focus, .dash-main textarea:focus { border-color: var(--f1-red) !important; outline: none; box-shadow: 0 0 0 3px rgba(225,6,0,.2) !important; }
+.dash-main input[type="checkbox"], .dash-main input[type="radio"] { accent-color: var(--f1-red); }
+
+/* ── Tables ───────────────────────────────────────────────────────────────── */
+.ov-table, .contract-table, .sponsor-table, .scout-table, .dash-main table {
+  border-collapse: collapse; font-family: 'Titillium Web', sans-serif !important;
+}
+.dash-main table th {
+  font: 700 12px 'Titillium Web', sans-serif !important; text-transform: uppercase; letter-spacing: .03em !important;
+  color: var(--f1-text-3) !important; border-bottom: 1px solid rgba(255,255,255,.15) !important; background: transparent !important;
+}
+.dash-main table td { border-bottom: 1px solid rgba(255,255,255,.07) !important; }
+.dash-main table tbody tr:hover td { background: rgba(255,255,255,.03); }
+
+/* ── Small bits: pills, tags, tabs inside tools ──────────────────────────── */
+.tag-pill, .ov-tag, .season-weekend-pill, .scout-series-tag { border-radius: 1000px !important; font-family: 'Titillium Web', sans-serif !important; }
+.scout-role-tabs button, .scout-seg button, .season-cal-nav button { border-radius: 1000px !important; font-family: 'Titillium Web', sans-serif !important; }
+.modal { border-top: 3px solid var(--f1-red) !important; }
+
+/* ── Login: split screen ──────────────────────────────────────────────────── */
+#gate-section .gate-wrap {
+  display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(340px, 1fr); gap: 0; padding: 0;
+  min-height: 560px; align-items: stretch; border-radius: 12px; overflow: hidden; border: 1px solid var(--f1-line); background: var(--f1-card);
+}
+.login-promo {
+  position: relative; display: flex; align-items: flex-end;
+  background: #0b0b10 url('../tracks/Bathurst_.webp') center / cover no-repeat;
+}
+.login-promo::before { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(11,11,16,.95) 8%, rgba(11,11,16,.35) 60%, rgba(11,11,16,.15)); }
+.login-promo__inner { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 36px 36px 40px; }
+.login-promo__kicker { align-self: flex-start; background: var(--f1-red); color: #fff; border-radius: 1000px; padding: 4px 12px; font: 700 12px 'Titillium Web', sans-serif; text-transform: uppercase; letter-spacing: .04em; }
+.login-promo__title { font: 900 clamp(26px, 3.2vw, 44px)/1.05 'Formula1 Wide', 'Formula1', sans-serif; text-transform: uppercase; color: #fff; }
+.login-promo__sub { max-width: 440px; font: 600 15px/1.5 'Titillium Web', sans-serif; color: #d6d6de; }
+#gate-section .login-card {
+  max-width: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  padding: 48px 44px !important; display: flex; flex-direction: column; justify-content: center; background: var(--f1-card) !important;
+}
+.login-brand { margin-bottom: 6px; }
+.login-mark { display: none; }
+.login-title { font: 900 28px 'Formula1 Wide', 'Formula1', sans-serif !important; letter-spacing: 0 !important; }
+.login-sub { font: 600 14px 'Titillium Web', sans-serif !important; color: var(--f1-text-2) !important; margin-bottom: 28px !important; }
+#gate-section .field input { padding: 13px 14px !important; font-size: 15px !important; }
+#gate-section .btn-login { margin-top: 8px; padding: 13px 20px !important; font-size: 15px !important; }
+.error-line { color: #ff6b63; font: 600 13px 'Titillium Web', sans-serif; }
+
+/* ── Phones / tablets ─────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  #gate-section .gate-wrap { grid-template-columns: 1fr; }
+  .login-promo { min-height: 240px; }
+  #gate-section .login-card { padding: 28px 22px !important; }
+  .dash-body { grid-template-columns: 1fr !important; gap: 16px; }
+  .dash-side { position: sticky !important; top: 56px; z-index: 20; padding: 6px !important; }
+  .dash-nav { flex-direction: row !important; overflow-x: auto; scrollbar-width: none; }
+  .dash-nav::-webkit-scrollbar { display: none; }
+  .dash-nav button { flex: none; width: auto !important; white-space: nowrap; }
+  .dash-nav button.active::before { left: 10px; right: 10px; top: auto; bottom: -6px; width: auto; height: 3px; border-radius: 3px 3px 0 0; }
+}
+@media (max-width: 640px) {
+  body[data-page="dashboard"] .page { padding: 14px 12px 30px; }
+}
+
+/* Logged out: no sidebar, so the login uses the full width */
+.dash-body:has(> .dash-side.hidden) { grid-template-columns: minmax(0, 1fr) !important; }
+
+/* Inner tabs of tools (mail folders etc.) in the same type as the sidebar */
+.dash-main [class*="folder"] button, .dash-main [class*="-tabs"] button { font-family: 'Titillium Web', sans-serif !important; text-transform: none !important; letter-spacing: 0 !important; font-weight: 700 !important; }
+
+/* Keep phones inside the screen: menu strip scrolls, title wraps */
+.dash-body > * { min-width: 0; }
+@media (max-width: 900px) {
+  .dash-side { max-width: 100%; overflow: hidden; }
+  .identity { flex-wrap: wrap; min-width: 0; }
+  .identity .role { display: none; }
+  .identity .name { font-size: 22px; }
+  .field-row { flex-wrap: wrap; }
+  .field-row .field { min-width: 0; flex: 1 1 100%; }
+}
