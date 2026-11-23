@@ -572,7 +572,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
 <link rel="stylesheet" href="css/radio-card.css">
 <link rel="stylesheet" href="css/dashboard-radio.css?v=container-preview-2">
 <link rel="stylesheet" href="css/f1-theme.css?v=8">
-<link rel="stylesheet" href="css/dashboard-f1.css?v=3">
+<link rel="stylesheet" href="css/dashboard-f1.css?v=4">
 </head>
 <body data-page="dashboard">
 
@@ -1940,6 +1940,30 @@ async function currentYear() {
 }
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+/* ---------- proper team names ("aston_martin" → "Aston Martin") ---------- */
+function prettyTeam(key) {
+  var k = String(key == null ? '' : key).trim();
+  if (!k) return '';
+  var n = '';
+  try { if (BTG.DBCache && BTG.DBCache.teamName) n = BTG.DBCache.teamName(k); } catch (e) {}
+  if ((!n || n === k) && BTG.Roster && BTG.Roster.teamName) { try { n = BTG.Roster.teamName(k, false) || n; } catch (e) {} }
+  if (!n || n === k) n = /[_]/.test(k) || k === k.toLowerCase() ? k.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); }) : k;
+  return n;
+}
+/* Replace raw team keys inside free text (money-log labels etc.). */
+function prettyTeamsIn(text) {
+  var keys = [];
+  try { keys = ((BTG.DBCache && BTG.DBCache.data && BTG.DBCache.data()) || {}).teams || []; } catch (e) { keys = []; }
+  var out = String(text == null ? '' : text);
+  keys.forEach(function (t) {
+    var k = String(t.team_key || '');
+    if (!k || k.length < 3) return;
+    var re = new RegExp('(^|[^A-Za-z0-9_])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?=$|[^A-Za-z0-9_])', 'g');
+    if (k === k.toLowerCase()) out = out.replace(re, function (m, pre) { return pre + prettyTeam(k); });
+  });
+  return out;
+}
+
 function fmtMoney(n) {
   if (n === null || n === undefined || n === '' || isNaN(Number(n))) return '—';
   n = Number(n);
@@ -2514,15 +2538,19 @@ async function renderTransactions() {
     (groups[key] = groups[key] || []).push(r);
   });
   let html = '';
-  Object.keys(groups).sort().reverse().forEach(function (key) {
-    html += '<div class="tx-group"><div class="tx-date">' + BTG.esc(key) + '</div>';
+  const dates = Object.keys(groups).sort().reverse();
+  dates.forEach(function (key, i) {
+    html += '<div class="tx-group' + (i >= 3 ? ' tx-more' : '') + '"><div class="tx-date">' + BTG.esc(key) + '</div>';
     groups[key].forEach(function (r) {
       const cls = r.amount >= 0 ? 'pos' : 'neg';
-      html += '<div class="tx-row"><span class="tx-label">' + BTG.esc(r.label) + '</span>'
+      html += '<div class="tx-row"><span class="tx-label">' + BTG.esc(prettyTeamsIn(r.label)) + '</span>'
         + '<span class="tx-amt ' + cls + '">' + (r.amount >= 0 ? '+' : '−') + fmtMoney(Math.abs(r.amount)) + '</span></div>';
     });
     html += '</div>';
   });
+  if (dates.length > 3) {
+    html += '<button type="button" class="action action-compact tx-toggle" onclick="var w=this.parentNode;var open=w.classList.toggle(\'tx-open\');this.querySelector(\'span\').textContent=open?\'Show less\':\'Show all (' + dates.length + ' dates)\';"><span>Show all (' + dates.length + ' dates)</span></button>';
+  }
   wrap.innerHTML = html;
 }
 
@@ -2561,21 +2589,36 @@ function renderDriverOverview() {
   const results = rec && rec.seasonStats && rec.seasonStats.results ? rec.seasonStats.results : [];
   const lastRace = results.length ? ('P' + results[results.length - 1].pos) : '—';
   const num = d.number || (rec ? rec.carNumber : '') || '';
+  const team = prettyTeam(d.team);
+  const band = (team && BTG.teamBandFor) ? BTG.teamBandFor(team) : null;
   el.innerHTML =
-    '<div class="ov-hero">'
-    + '<div class="ov-hero__photo">' + BTG.driverPhotoImg(d.driver, 84, 'dp-hero__img', CURRENT_YEAR) + (num ? '<div class="ov-hero__num">' + BTG.esc(num) + '</div>' : '') + '</div>'
-    + '<div><div class="ov-hero__name">' + BTG.esc(d.driver) + '</div>'
-    + '<div class="ov-hero__meta">'
-    + (d.team ? '<span class="ov-tag">' + BTG.esc(d.team) + '</span>' : '')
-    + '<span>' + BTG.flagImg(d.nation, 16, 11) + ' ' + BTG.esc(d.nation || '') + '</span>'
-    + (BTG.numberSlot ? BTG.numberSlot(num, name, 20, '', undefined, undefined, CURRENT_YEAR) : '')
-    + '</div></div></div>'
+    '<div class="ov-banner"' + (band ? ' style="' + band.style + '"' : '') + '>'
+    + '<div class="ov-banner__text">'
+    +   '<div class="ov-banner__kicker">' + BTG.esc(team || 'Free agent') + ' &middot; Driver &middot; ' + BTG.esc(CURRENT_YEAR || '') + '</div>'
+    +   '<div class="ov-banner__name">' + BTG.esc(String(d.driver).split(' ').slice(0, -1).join(' ')) + ' <b>' + BTG.esc(String(d.driver).split(' ').slice(-1)[0]) + '</b></div>'
+    +   '<div class="ov-banner__meta">'
+    +     (team && BTG.teamLogoImg ? '<span class="ov-banner__team">' + BTG.teamLogoImg(d.team, d.series || 'F1', 22) + '<span>' + BTG.esc(team) + '</span></span>' : '')
+    +     (d.nation ? '<span class="ov-banner__nat">' + BTG.flagImg(d.nation, 22, 15) + ' ' + BTG.esc(d.nation) + '</span>' : '')
+    +     (num ? '<span class="ov-banner__num">#' + BTG.esc(num) + '</span>' : '')
+    +   '</div>'
+    + '</div>'
+    + '<div class="ov-banner__photo">' + BTG.driverPhotoImg(d.driver, 240, 'ov-banner__img', CURRENT_YEAR) + '</div>'
+    + '</div>'
     + '<div class="ov-stats">'
     + '<div class="ov-stat-card"><div class="v" style="color:var(--team-accent-hot)">' + (d.ovr != null ? d.ovr : '—') + '</div><div class="k">Overall rating</div></div>'
     + '<div class="ov-stat-card"><div class="v">P' + BTG.esc(standing) + '</div><div class="k">Championship</div></div>'
     + '<div class="ov-stat-card"><div class="v">' + BTG.esc(points) + '</div><div class="k">Season points</div></div>'
     + '<div class="ov-stat-card"><div class="v">' + BTG.esc(lastRace) + '</div><div class="k">Last race</div></div>'
     + '</div>';
+  setMasthead(d.driver, (team ? team + ' · ' : '') + 'Driver');
+}
+
+/* Masthead: who is logged in instead of "Dashboard | Dashboard". */
+function setMasthead(name, role) {
+  var n = document.querySelector('.masthead .identity .name');
+  var r = document.querySelector('.masthead .identity .role');
+  if (n) n.textContent = name || 'Dashboard';
+  if (r) r.textContent = role || 'Dashboard';
 }
 
 function renderTpOverview() {
@@ -2765,7 +2808,7 @@ function renderContracts() {
       actions = '<td>' + (role === 'tp' ? '<button class="action action-quiet action-compact" onclick="openContractModify(' + Number(c.row) + ')"><span>Modify</span></button>' : '')
         + '<button class="action action-quiet action-compact" onclick="openContractExit(' + Number(c.row) + ')"><span>End contract</span></button></td>';
     }
-    return '<tr><td class="strong">' + BTG.esc(c.driver) + '</td><td>' + BTG.esc(c.team) + '</td>'
+    return '<tr><td class="strong">' + BTG.esc(c.driver) + '</td><td>' + BTG.esc(prettyTeam(c.team)) + '</td>'
       + '<td>' + fmtMoney(c.salary) + '</td><td>' + BTG.esc(c.from || '—') + '–' + BTG.esc(c.till || '—') + '</td>'
       + '<td>' + BTG.esc(c.seat || '—') + '</td><td><span class="tag-pill">' + BTG.esc(seatCategoryLabel_(c.seat, c.team)) + '</span></td>'
       + '<td>' + (c.promise ? BTG.esc(c.promise.series + (c.promise.by ? ' by ' + c.promise.by : '')) : '—') + '</td>'
@@ -2783,7 +2826,7 @@ function renderContracts() {
     const st = offerStatus(o);
     const offerClass = st === 'Rejected' ? 'denied' : (st === 'On Hold' ? 'warn' : '');
     offerHtml += '<div class="offer ' + offerClass + '">'
-      + '<div class="offer-top"><span class="strong">' + BTG.esc(o.team) + ' → ' + BTG.esc(o.target) + '</span>' + (o.modify ? '<span class="tag-pill warn">Contract change</span>' : '') + (o.offerKind === 'loan' ? '<span class="tag-pill">Loan - ' + BTG.esc(o.loanTeam) + ' (' + (o.loanPercent || 0) + '% paid by them)</span>' : '')
+      + '<div class="offer-top"><span class="strong">' + BTG.esc(prettyTeam(o.team)) + ' → ' + BTG.esc(prettyTeam(o.target)) + '</span>' + (o.modify ? '<span class="tag-pill warn">Contract change</span>' : '') + (o.offerKind === 'loan' ? '<span class="tag-pill">Loan - ' + BTG.esc(o.loanTeam) + ' (' + (o.loanPercent || 0) + '% paid by them)</span>' : '')
       + '<span class="stamp">' + fmtMoney(o.salary) + ' · ' + BTG.esc(o.from || '—') + '–' + BTG.esc(o.till || '—') + (o.role ? ' · ' + BTG.esc(o.role) : '') + '</span></div>'
       + (o.message ? '<div class="offer-body">' + BTG.esc(o.message) + '</div>' : '')
       + (o.promise ? '<div class="offer-body">Promise: seat in <b>' + BTG.esc(o.promise.series) + '</b>' + (o.promise.by ? ' by <b>' + BTG.esc(o.promise.by) + '</b>' : '') + '</div>' : '')
@@ -3124,6 +3167,7 @@ function onLoginSuccess(data) {
 
   if (data.role === 'admin') {
     setStatus('admin', 'Admin — ' + data.username);
+    setMasthead('Dashboard', 'Admin · ' + data.username);
     DRIVERS = data.drivers || [];
     TEAMS = data.teams || [];
     MAIL_FILTER = 'BTG Officials';
@@ -3132,6 +3176,7 @@ function onLoginSuccess(data) {
     renderSeriesRunners();
   } else if (data.role === 'tp') {
     setStatus('driver', 'Team Principal — ' + data.username);
+    setMasthead(data.username, 'Team Principal');
     document.getElementById('driver-select-wrap').classList.add('hidden');
     TP_TEAM_SEL = null;
     populateTpTeamSwitch();
@@ -3178,6 +3223,7 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   if (tsw) { tsw.value = ''; tsw.innerHTML = ''; }
   setTeamColors(null); // reset to default ember tones
   setStatus('locked', 'Locked');
+  setMasthead('Dashboard', 'Dashboard');
 });
 
 /* ---------- refresh (re-login without logging out) ---------- */
@@ -4924,7 +4970,7 @@ function renderDriver() {
     metaRow.classList.remove('hidden');
     if (hasTeam) {
       teamTag.classList.remove('hidden');
-      document.getElementById('driver-team-name').textContent = SELECTED.team.trim();
+      document.getElementById('driver-team-name').textContent = prettyTeam(SELECTED.team.trim());
     } else {
       teamTag.classList.add('hidden');
     }
@@ -7479,7 +7525,7 @@ function renderChat() {
       pickerWrap.classList.add('hidden');
     }
   }
-  if (headingEl) headingEl.textContent = (CHAT.activeRoom || 'Team') + ' Chat';
+  if (headingEl) headingEl.textContent = (CHAT.activeRoom ? prettyTeam(CHAT.activeRoom) : 'Team') + ' Chat';
 
   var st = CHAT.state[CHAT.activeRoom] || { messages: [], members: [] };
 
