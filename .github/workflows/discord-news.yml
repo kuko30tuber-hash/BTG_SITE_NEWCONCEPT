@@ -4,11 +4,13 @@
 #  news article, saves it (and its images) into news/, then republishes the
 #  site. Needs: secrets DISCORD_BOT_TOKEN + GROQ_API_KEY, variable DISCORD_CHANNEL_ID.
 # ═══════════════════════════════════════════════════════════════════════════
-name: Discord News
+name: Discord News (bot, schedule off)
 
+# Hourly schedule is OFF (no bot in the Discord server). To switch it back on,
+# put these two lines back under "on:":
+#   schedule:
+#     - cron: '17 * * * *'
 on:
-  schedule:
-    - cron: '17 * * * *'   # every hour at :17
   workflow_dispatch:
 
 permissions:
@@ -16,7 +18,7 @@ permissions:
   actions: write
 
 concurrency:
-  group: discord-news
+  group: news-publish
   cancel-in-progress: false
 
 jobs:

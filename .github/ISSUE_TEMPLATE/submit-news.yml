@@ -1,0 +1,38 @@
+name: Submit news
+description: Paste a Discord post (text + images) and it becomes a news article on the site.
+title: "[News] "
+labels: ["news-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Paste the post below and drag its images into the same box. Press **Submit new issue** —
+        within a minute or two the article is written, published, and this issue closes with a link to it.
+  - type: textarea
+    id: post
+    attributes:
+      label: Post
+      description: The Discord post's text. Drag & drop or paste images into this box too.
+      placeholder: "Jason Roy signs a new deal with Ferrari until 2027…"
+    validations:
+      required: true
+  - type: dropdown
+    id: series
+    attributes:
+      label: Series
+      description: Leave on Auto-detect to let the AI decide.
+      options:
+        - Auto-detect
+        - F1
+        - F2
+        - XGT
+        - General
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: date
+    attributes:
+      label: Date (optional)
+      description: When it happened, as YYYY-MM-DD. Leave empty for today.
+      placeholder: "2026-11-23"

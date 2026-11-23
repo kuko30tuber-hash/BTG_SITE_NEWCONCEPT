@@ -1,0 +1,83 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  "Submit news" issue → article
+#  When the repo owner opens a "[News]" issue, Groq writes it up as an
+#  article, the images are saved into news/, the site is republished, and the
+#  issue is closed with a link. Issues from anyone else are ignored.
+# ═══════════════════════════════════════════════════════════════════════════
+name: News from issue
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+concurrency:
+  group: news-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: >-
+      github.event.issue.user.login == github.repository_owner &&
+      (startsWith(github.event.issue.title, '[News]') ||
+       contains(github.event.issue.labels.*.name, 'news-submission'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Write the article
+        id: article
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/news-from-issue.mjs
+
+      - name: Save it
+        env:
+          TITLE: ${{ steps.article.outputs.title }}
+          NUM: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add news/
+          git commit -m "news: ${TITLE} (#${NUM})"
+          git pull --rebase --autostash
+          git push
+
+      # Pushes made by a workflow don't trigger other workflows, so start the deploy directly.
+      - name: Republish the site
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main
+
+      - name: Reply and close
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SLUG: ${{ steps.article.outputs.slug }}
+          TITLE: ${{ steps.article.outputs.title }}
+          IMAGES: ${{ steps.article.outputs.images }}
+          WANTED: ${{ steps.article.outputs.wanted }}
+        run: |
+          URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/news.html?article=${SLUG}"
+          NOTE=""
+          if [ "${IMAGES}" != "${WANTED}" ]; then NOTE=$'\n\n⚠️ Only '"${IMAGES}"' of '"${WANTED}"' images could be saved.'; fi
+          gh issue comment "${{ github.event.issue.number }}" -R "${{ github.repository }}" \
+            --body "✅ Published: **${TITLE}**"$'\n\n'"${URL}"$'\n\n'"It will be live in about a minute.${NOTE}"
+          gh issue close "${{ github.event.issue.number }}" -R "${{ github.repository }}" --reason completed
+
+      - name: Report a problem
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" -R "${{ github.repository }}" \
+            --body "❌ Couldn't publish this one. Details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

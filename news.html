@@ -50,6 +50,10 @@
         buildTagsDrawer();
         renderTicker();
         renderFront();
+        // Direct link to one article: news.html?article=<slug>
+        var want = new URLSearchParams(location.search).get('article');
+        var hit = want && articles.filter(function(a) { return a._slug === want; })[0];
+        if (hit) openArticle(hit);
       })
       .catch(function() {
         var c = document.getElementById('content');
@@ -95,8 +99,10 @@
       })
       .then(function(files) {
         return Promise.all(files.map(function(f) {
-          return fetch('news/' + String(f).replace(/\.json$/i, '') + '.json')
+          var slug = String(f).replace(/\.json$/i, '');
+          return fetch('news/' + slug + '.json')
             .then(function(r) { return r.ok ? r.json() : null; })
+            .then(function(a) { if (a) a._slug = slug; return a; })
             .catch(function() { return null; });
         }));
       });
