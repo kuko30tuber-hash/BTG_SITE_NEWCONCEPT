@@ -154,6 +154,8 @@ Write a news article of 3 to 4 paragraphs (each 2-4 sentences), in clear sports-
 - LEAGUE DATA describes this sim-racing league, not real-world motorsport; do not add real-world knowledge.
 - Do not add a season/year to the news unless THE NEWS states it.
 - Never describe images, graphics, photos, clothing, sponsors or logos.
+- Do not combine separate facts into a new claim (e.g. who contributed to which results). Results belong to the
+  team or driver they are listed for, nothing more.
 - No opinions or evaluations of your own (e.g. "gives him experience", "strengthens the team", "links the series").
   State facts; let them speak.
 - No emojis, hashtags or markdown. Do not mention Discord, "the post", "the graphic", "the image" or "league data".

@@ -103,7 +103,7 @@ export async function leagueFacts(text) {
     if (res.length) {
       const wins = res.filter((r) => Number(r.finish_position) === 1).length;
       const pods = res.filter((r) => { const p = Number(r.finish_position); return p >= 1 && p <= 3; }).length;
-      lines.push(`- ${latestYear} season so far: ${wins} wins, ${pods} podiums`);
+      lines.push(`- team results in the ${latestYear} season so far: ${wins} wins, ${pods} podiums`);
     }
   });
 
