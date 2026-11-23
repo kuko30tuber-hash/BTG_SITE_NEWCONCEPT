@@ -64,8 +64,9 @@ const VISION_MODELS = [process.env.GROQ_VISION_MODEL, 'meta-llama/llama-4-scout-
 const VISION_RULES = `
 The post comes with image(s). Read them carefully: use text that is written in the images (names, headlines,
 results, dates, team names, logos with names) as facts. Never identify a person from their face or appearance —
-only name people whose names are written in the image or the post. If the images contain no readable facts,
-write a short neutral piece describing what is shown, without guessing who it is.`;
+only name people whose names are written in the image or the post. Report only the news the image announces;
+do not describe the picture itself (clothing, sponsors, logos, colours, layout, "a graphic shows…").
+If the images contain no readable facts, write one short neutral sentence, without guessing who it is.`;
 
 function parseArticle(raw) {
   const json = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
@@ -151,7 +152,11 @@ Write a news article of 3 to 4 paragraphs (each 2-4 sentences), in clear sports-
   that are not in THE NEWS or LEAGUE DATA. Do not speculate about the future beyond what the news says.
 - If LEAGUE DATA is thin, write 3 shorter paragraphs rather than padding with invented detail.
 - LEAGUE DATA describes this sim-racing league, not real-world motorsport; do not add real-world knowledge.
-- No emojis, hashtags or markdown. Do not mention Discord, "the post", "the graphic" or "league data".
+- Do not add a season/year to the news unless THE NEWS states it.
+- Never describe images, graphics, photos, clothing, sponsors or logos.
+- No opinions or evaluations of your own (e.g. "gives him experience", "strengthens the team", "links the series").
+  State facts; let them speak.
+- No emojis, hashtags or markdown. Do not mention Discord, "the post", "the graphic", "the image" or "league data".
 Return JSON only:
 {"title": "headline, max 90 characters", "paragraphs": ["...", "...", "..."]}`;
 
@@ -176,7 +181,7 @@ async function textModels(messages) {
  */
 export async function writeArticle(text, hasImages, imageFiles = []) {
   const first = await groqArticle(text, hasImages, imageFiles);
-  const news = [text ? 'Post text: ' + text : '', 'Summary of the announcement: ' + first.title + '. ' + (first.paragraphs || []).join(' ')].filter(Boolean).join('\n');
+  const news = [text ? 'Post text: ' + text : '', 'The announcement: ' + first.title + '. ' + (first.paragraphs || []).join(' ')].filter(Boolean).join('\n');
   const facts = await leagueFacts([text, first.title, ...(first.paragraphs || []), ...(first.tags || [])].join('\n'));
   try {
     const second = await textModels([
