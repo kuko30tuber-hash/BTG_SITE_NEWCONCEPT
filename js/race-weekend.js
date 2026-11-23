@@ -281,8 +281,17 @@ window.BTG = window.BTG || {};
       }
       state.seriesList = BTG.Data.getSeriesList();
       state.activeSeries = state.seriesList[0] ? state.seriesList[0].id : 'F1';
+      // Deep link from the Calendar: ?series=F1&season=2024&round=9
+      var q = new URLSearchParams(location.search);
+      if (q.get('series') && state.seriesList.some(function(s){ return s.id === q.get('series'); })) {
+        state.activeSeries = q.get('series');
+      }
       state.seasons = BTG.Data.getSeasons(state.activeSeries);
       state.activeSeason = state.seasons[0] || 2024;
+      if (q.get('season') && state.seasons.indexOf(Number(q.get('season'))) !== -1) {
+        state.activeSeason = Number(q.get('season'));
+      }
+      if (Number(q.get('round')) > 0) state.pendingRound = Number(q.get('round'));
       render(); // render shell + selector immediately (keeps selector visible)
       loadRaces();
     }).catch(function() {
@@ -423,6 +432,12 @@ window.BTG = window.BTG || {};
 
   function finalizeRaceLoad() {
     var completed = state.races;
+    // Honour a round asked for by the Calendar link, once the races are known.
+    if (state.pendingRound && state.races.length) {
+      var wanted = state.races[state.pendingRound - 1];
+      state.pendingRound = null;
+      if (wanted) state.selectedRaceId = wanted.id;
+    }
     if (!state.selectedRaceId || !state.races.some(function(r) { return r.id === state.selectedRaceId; })) {
       // Default to the most recent race that actually has data; otherwise the
       // most recent round in the calendar.
