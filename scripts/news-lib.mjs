@@ -74,11 +74,11 @@ function parseArticle(raw) {
   return json;
 }
 
-async function callGroq(model, messages, jsonMode) {
+async function callGroq(model, messages, jsonMode, temperature = 0.4) {
   const res = await fetch(GROQ_API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + GROQ_KEY },
-    body: JSON.stringify({ model, temperature: 0.4, max_tokens: 1200, ...(jsonMode ? { response_format: { type: 'json_object' } } : {}), messages })
+    body: JSON.stringify({ model, temperature, max_tokens: 1200, ...(jsonMode ? { response_format: { type: 'json_object' } } : {}), messages })
   });
   if (res.status === 429) throw new RateLimited('Groq rate limit reached');
   if (!res.ok) { const e = new Error('Groq ' + model + ' ' + res.status + ': ' + (await res.text()).slice(0, 200)); e.status = res.status; throw e; }
@@ -152,7 +152,8 @@ Write a news article of 3 to 4 paragraphs (each 2-4 sentences), in clear sports-
   that are not in THE NEWS or LEAGUE DATA. Do not speculate about the future beyond what the news says.
 - If LEAGUE DATA is thin, write 3 shorter paragraphs rather than padding with invented detail.
 - LEAGUE DATA describes this sim-racing league, not real-world motorsport; do not add real-world knowledge.
-- Do not add a season/year to the news unless THE NEWS states it.
+- Do not add a season/year or time frame (e.g. "for the rest of the season") to the news unless THE NEWS states it.
+- Use each fact exactly as given: nationality is nationality (not a licence), a contract is a contract.
 - Never describe images, graphics, photos, clothing, sponsors or logos.
 - Do not combine separate facts into a new claim (e.g. who contributed to which results). Results belong to the
   team or driver they are listed for, nothing more.
@@ -162,10 +163,10 @@ Write a news article of 3 to 4 paragraphs (each 2-4 sentences), in clear sports-
 Return JSON only:
 {"title": "headline, max 90 characters", "paragraphs": ["...", "...", "..."]}`;
 
-async function textModels(messages) {
+async function textModels(messages, temperature) {
   let lastErr;
   for (const model of [...new Set(MODELS)]) {
-    try { return await callGroq(model, messages, true); }
+    try { return await callGroq(model, messages, true, temperature); }
     catch (e) {
       if (e instanceof RateLimited) throw e;
       lastErr = e;
@@ -189,7 +190,7 @@ export async function writeArticle(text, hasImages, imageFiles = []) {
     const second = await textModels([
       { role: 'system', content: WRITER },
       { role: 'user', content: `THE NEWS:\n${news.slice(0, 5000)}\n\nLEAGUE DATA:\n${facts || '(none available)'}` }
-    ]);
+    ], 0.15);
     const paras = (second.paragraphs || []).map((p) => String(p).trim()).filter(Boolean);
     if (paras.length >= 2) return { ...first, title: second.title || first.title, paragraphs: paras.slice(0, 5) };
   } catch (e) {
