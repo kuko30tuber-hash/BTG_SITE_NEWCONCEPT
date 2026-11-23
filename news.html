@@ -84,13 +84,13 @@
     // F1CC-style news/index.json = array of keys; fall back to manifest.json.
     // Both are optional: when the news/ folder is empty the page simply shows
     // "No news in this section", so the two requests are cheap probes.
-    return fetch('news/index.json')
+    return fetch('news/index.json', { cache: 'no-store' })
       .then(function(r) { return r.ok ? r.json() : null; })
       .catch(function() { return null; })
       .then(function(keys) {
         var files = Array.isArray(keys) ? keys : null;
         if (!files) {
-          return fetch('news/manifest.json')
+          return fetch('news/manifest.json', { cache: 'no-store' })
             .then(function(r) { return r.ok ? r.json() : { articles: [] }; })
             .catch(function() { return { articles: [] }; })
             .then(function(m) { return (m && m.articles) || []; });
@@ -100,7 +100,7 @@
       .then(function(files) {
         return Promise.all(files.map(function(f) {
           var slug = String(f).replace(/\.json$/i, '');
-          return fetch('news/' + slug + '.json')
+          return fetch('news/' + slug + '.json', { cache: 'no-cache' })
             .then(function(r) { return r.ok ? r.json() : null; })
             .then(function(a) { if (a) a._slug = slug; return a; })
             .catch(function() { return null; });
