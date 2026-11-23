@@ -1,0 +1,470 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   BeTheGrid — F1-style theme
+   Loaded LAST on every page, on top of style.css and each page's own <style>.
+   Inspired by the formula1.com look: carbon-black surfaces, F1 red accent,
+   heavy uppercase Formula1 headings, Titillium Web body copy, 8px cards and
+   pill-shaped controls. Delete the <link> to this file to get the old look back.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap');
+
+@font-face { font-family: 'Formula1'; src: url('../fonts/Formula1-Regular_web_0%20(1).ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Formula1'; src: url('../fonts/Formula1-Bold_web_0%20(1).ttf') format('truetype'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Formula1 Wide'; src: url('../fonts/Formula1-Wide_web_0%20(1).ttf') format('truetype'); font-weight: 400 900; font-display: swap; }
+
+/* ── Tokens ───────────────────────────────────────────────────────────────── */
+:root {
+  --f1-red: #e10600;
+  --f1-red-hot: #ff2a1f;
+  --f1-carbon: #15151e;
+  --f1-black: #0b0b10;
+  --f1-card: #1f1f27;
+  --f1-card-2: #26262e;
+  --f1-card-3: #303037;
+  --f1-line: rgba(255,255,255,0.09);
+  --f1-line-2: rgba(255,255,255,0.18);
+  --f1-text: #ffffff;
+  --f1-text-2: #c9c9d0;
+  --f1-text-3: #8e8e98;
+
+  /* Map onto the site's existing tokens so every page picks them up */
+  --ink: var(--f1-carbon);
+  --ink-deep: var(--f1-black);
+  --card: var(--f1-card);
+  --card-raised: var(--f1-card-2);
+  --card-high: var(--f1-card-3);
+  --edge: var(--f1-line);
+  --edge-strong: var(--f1-line-2);
+  --copy: var(--f1-text);
+  --copy-soft: var(--f1-text-2);
+  --copy-faint: var(--f1-text-3);
+  --ember: var(--f1-red);
+  --ember-hot: var(--f1-red-hot);
+
+  --accent-rgb: 225 6 0;
+  --accent-light-rgb: 255 82 72;
+  --accent-dark-rgb: 140 4 0;
+  --accent-dark: #8c0400;
+  --base-rgb: 21 21 30;
+  --deep-rgb: 11 11 16;
+  --card-rgb: 31 31 39;
+  --card-hover-rgb: 38 38 46;
+  --raised-rgb: 38 38 46;
+  --surface-raised: var(--f1-card-2);
+  --header-rgb: 21 21 30;
+  --border-subtle: var(--f1-line);
+  --border-medium: rgba(255,255,255,0.14);
+  --border-strong: var(--f1-line-2);
+
+  --head-face: 'Formula1', 'Titillium Web', system-ui, sans-serif;
+  --body-face: 'Titillium Web', system-ui, sans-serif;
+  --data-face: 'Titillium Web', system-ui, sans-serif;
+  --art-kicker-face: 'Formula1', 'Titillium Web', sans-serif;
+
+  /* Home page's own tokens */
+  --bg-base: var(--f1-carbon);
+  --bg-card: var(--f1-card);
+  --text-primary: var(--f1-text);
+  --text-secondary: var(--f1-text-2);
+  --text-muted: var(--f1-text-3);
+  --accent: var(--f1-red);
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────────── */
+html { background: var(--f1-carbon); }
+body {
+  background: var(--f1-carbon);
+  color: var(--f1-text);
+  font-family: var(--body-face);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+/* The per-team colour wash stays, but much quieter — F1 surfaces are flat */
+body::before { opacity: .35; }
+
+h1, h2, h3 {
+  font-family: 'Formula1', 'Titillium Web', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+::selection { background: var(--f1-red); color: #fff; }
+:focus-visible { outline: 2px solid var(--f1-red); outline-offset: 2px; }
+
+/* ── Header: utility strip + main bar ─────────────────────────────────────── */
+.btg-nav {
+  display: block;
+  height: auto;
+  padding: 0;
+  background: var(--f1-carbon);
+  border-bottom: 0;
+  position: sticky;
+  top: -32px;               /* the thin top strip scrolls away, main bar stays */
+  z-index: 50;
+  overflow: visible;
+}
+.f1-util {
+  height: 32px;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+  padding: 0 24px;
+}
+.f1-util a, .f1-util button {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: #fff; text-decoration: none;
+  font: 700 12px/1 'Titillium Web', sans-serif;
+  text-transform: uppercase; letter-spacing: .02em;
+  background: none; border: 0; cursor: pointer; opacity: .9;
+}
+.f1-util a:hover, .f1-util button:hover { opacity: 1; color: #fff; }
+.f1-util img { height: 14px; width: auto; display: block; }
+
+.f1-util .f1-util__support {
+  gap: 0;
+  background: var(--f1-red); border-radius: 1000px; padding: 6px 14px; opacity: 1;
+}
+.f1-util .f1-util__support:hover { background: var(--f1-red-hot); }
+
+.f1-main {
+  position: relative;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  background: var(--f1-carbon);
+  border-bottom: 1px solid var(--f1-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.f1-main::-webkit-scrollbar { display: none; }
+/* F1's diagonal speed-stripes behind the right half of the bar */
+.f1-main::before {
+  content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: 55%;
+  background: repeating-linear-gradient(115deg, transparent 0 34px, rgba(255,255,255,0.035) 34px 70px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%, #000 70%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 40%, #000 70%, transparent);
+  pointer-events: none;
+}
+.f1-main > * { position: relative; }
+.btg-nav .btg-logo { height: 56px; margin-right: 28px; }
+.btg-nav .btg-logo-img { height: 28px; }
+.btg-nav .nav-tab {
+  height: 56px;
+  padding: 0 16px;
+  margin: 0;
+  color: #fff;
+  font-family: 'Formula1', 'Titillium Web', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  border-bottom: 0;
+  position: relative;
+  opacity: .85;
+}
+.btg-nav .nav-tab:hover { opacity: 1; color: #fff; }
+.btg-nav .nav-tab.active { font-weight: 700; opacity: 1; color: #fff; }
+.btg-nav .nav-tab.active::after {
+  content: ""; position: absolute; left: 16px; right: 16px; bottom: 0; height: 3px;
+  background: var(--f1-red); border-radius: 3px 3px 0 0;
+}
+/* the old right-hand cluster now lives in the utility strip */
+.btg-nav .nav-right { display: none; }
+
+/* Pages built as fixed full-height app screens keep a single bar */
+body[data-page="lineups"] .f1-util,
+body[data-page="radio"] .f1-util,
+body[data-page="dashboard"] .f1-util,
+body[data-page="news-writer"] .f1-util { display: none; }
+body[data-page="lineups"] .btg-nav,
+body[data-page="radio"] .btg-nav,
+body[data-page="dashboard"] .btg-nav,
+body[data-page="news-writer"] .btg-nav { top: 0; }
+
+/* ── Page title band (inserted by common.js) ──────────────────────────────── */
+.f1-pagehead {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 36px 24px 18px;
+}
+.f1-pagehead__title {
+  font-family: 'Formula1 Wide', 'Formula1', sans-serif;
+  font-weight: 900;
+  font-size: clamp(20px, 2.4vw, 32px);
+  letter-spacing: .01em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0;
+}
+.f1-pagehead__sub {
+  margin-top: 8px;
+  color: var(--f1-text-2);
+  font-size: 15px;
+}
+
+/* ── Series switcher (F1 / F2 / XGT) → pill chips ─────────────────────────── */
+.series-bar {
+  background: transparent;
+  border-bottom: 0;
+  gap: 8px;
+  padding: 0;
+}
+.series-tab {
+  height: 40px;
+  padding: 0 16px !important;
+  border: 1px solid var(--f1-line-2) !important;
+  border-radius: 1000px;
+  background: transparent;
+  transition: background .15s, border-color .15s;
+}
+.series-tab:hover { border-color: rgba(255,255,255,.5) !important; background: rgba(255,255,255,.05); }
+.series-tab.active {
+  border-color: #fff !important;
+  background: rgba(255,255,255,.1);
+}
+.series-tab img { width: 54px; }
+
+/* ── Form controls ────────────────────────────────────────────────────────── */
+#season-select, #cal-season {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='white' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 14px center !important;
+  border: 1px solid var(--f1-line-2) !important;
+  border-radius: 1000px !important;
+  color: #fff !important;
+  font: 700 13px 'Titillium Web', sans-serif !important;
+  padding: 8px 34px 8px 16px !important;
+  cursor: pointer;
+}
+#season-select:hover, #cal-season:hover { border-color: rgba(255,255,255,.5) !important; }
+#season-select option, #cal-season option { background: var(--f1-card); color: #fff; }
+
+/* ── Cards / panels ───────────────────────────────────────────────────────── */
+.home-headline, .home-card, .home-col, .home-qs, .home-chart,
+.dp-card, .cal-card, .modal, .news-hero, .news-item, .nf-headline {
+  border-radius: 8px;
+}
+.home-headline, .home-card, .home-col, .home-qs, .home-chart, .dp-card {
+  background: var(--f1-card);
+  border: 1px solid var(--f1-line);
+}
+.home-headline {
+  border-left: 0;
+  position: relative;
+  overflow: hidden;
+}
+.home-headline::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--f1-red);
+}
+.home-headline__badge {
+  background: var(--f1-red); color: #fff; border: 0; border-radius: 4px;
+  font-family: 'Titillium Web', sans-serif; font-weight: 700; letter-spacing: .04em;
+}
+.home-headline__text { font-size: 17px; font-weight: 600; }
+
+/* Section titles inside panels → F1 bold, uppercase, no tracking */
+.home-col__title, .home-chart__title, .home-card__title, .dp-card__title,
+.modal-title, .page-section h2 {
+  font-family: 'Formula1', 'Titillium Web', sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase;
+}
+.home-col__title, .home-chart__title { font-size: 15px; }
+.home-card__title, .dp-card__title { font-size: 12px; color: var(--f1-text-2); }
+.home-col__head, .home-chart__head { padding: 16px 18px; border-bottom: 1px solid var(--f1-line); }
+.home-col__link {
+  font: 700 12px 'Titillium Web', sans-serif; color: #fff;
+}
+.home-col__link:hover { color: var(--f1-red-hot); }
+
+.home-card__value { font-family: 'Formula1', sans-serif; font-weight: 700; font-size: 17px; }
+
+/* Standings rows */
+.home-row { padding: 11px 16px; }
+.home-row + .home-row { border-top: 1px solid var(--f1-line); }
+.home-row:hover { background: rgba(255,255,255,.04); }
+.home-row__name { font-size: 14px; font-weight: 700; }
+.home-row__pts, .home-tw__score { font-family: 'Formula1', sans-serif; font-weight: 700; color: #fff; }
+.home-row__pos { font-family: 'Formula1', sans-serif; border-radius: 6px; }
+.home-row__pos--gold, .home-row__pos--silver, .home-row__pos--bronze { color: #fff; }
+.home-row__pos--gold   { background: var(--f1-red); border-color: var(--f1-red); }
+.home-row__pos--silver { background: var(--f1-card-3); border-color: var(--f1-line-2); }
+.home-row__pos--bronze { background: var(--f1-card-3); border-color: var(--f1-line-2); }
+
+.home-chart__pill { border-radius: 1000px; font-family: 'Titillium Web', sans-serif; font-size: 10px; }
+.home-chart__svg text { font-family: 'Titillium Web', sans-serif; }
+
+/* Generic tables */
+.btg-table thead th {
+  background: transparent;
+  color: var(--f1-text-3);
+  font: 600 12px 'Titillium Web', sans-serif;
+  letter-spacing: .02em;
+  border-bottom: 1px solid var(--f1-line-2);
+}
+.btg-table tbody td { border-bottom: 1px solid var(--f1-line); }
+.btg-table .col-pts, .btg-table .col-ovr { font-family: 'Formula1', sans-serif; color: #fff; }
+
+/* Buttons → F1 pills */
+.news-back, .tags-toggle, .dp-picker__toggle, .donate-btn {
+  border-radius: 1000px !important;
+}
+.donate-btn { background: var(--f1-red); border-color: var(--f1-red); font-family: 'Titillium Web', sans-serif; }
+.donate-btn:hover { background: var(--f1-red-hot); }
+.modal { background: var(--f1-card); border: 1px solid var(--f1-line); border-top: 3px solid var(--f1-red); }
+
+/* Articles: F1 news reads in Titillium, headline in Formula1 */
+.article-title { font-family: 'Formula1', sans-serif; font-weight: 700; }
+.article-body { font-family: 'Titillium Web', sans-serif; font-size: 17px; }
+
+/* ── Flat F1 cards instead of the glowing red outlines ───────────────────── */
+.border-glow-card { --border-radius: 8px; }
+.border-glow-card > .edge-light { display: none; }
+.border-glow-inner {
+  background: var(--f1-card);
+  border: 1px solid var(--f1-line);
+  box-shadow: none;
+}
+.border-glow-card--interactive:hover .border-glow-inner {
+  border-color: var(--f1-line-2);
+  box-shadow: none;
+  background: var(--f1-card-2);
+}
+
+/* ── Standings page (st-*) — same treatment as the home panels ─────────────── */
+:root { --st-dummy: 0; }
+.st-col { background: var(--f1-card); border: 1px solid var(--f1-line); border-radius: 8px; }
+.st-col__head { padding: 16px 18px; border-bottom: 1px solid var(--f1-line); }
+.st-col__title {
+  font-family: 'Formula1', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0;
+}
+.st-controls, .home-controls { border-bottom: 0; padding-top: 4px; }
+.st-label, .home-qs__label { font-family: 'Titillium Web', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: .02em; color: var(--f1-text-2); }
+.st-row { padding: 11px 16px; }
+.st-row + .st-row { border-top: 1px solid var(--f1-line); }
+.st-row__name { font-size: 14px; }
+.st-row__team { font-family: 'Titillium Web', sans-serif; font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--f1-text-3); }
+.st-row__pts { font-family: 'Formula1', sans-serif; color: #fff; font-size: 13px; }
+.st-row__pos { font-family: 'Formula1', sans-serif; border-radius: 6px; }
+.st-row__pos--gold, .st-row__pos--silver, .st-row__pos--bronze { color: #fff; }
+.st-row__pos--gold   { background: var(--f1-red); border-color: var(--f1-red); }
+.st-row__pos--silver, .st-row__pos--bronze { background: var(--f1-card-3); border-color: var(--f1-line-2); }
+.st-row__state { border-radius: 4px; font-family: 'Titillium Web', sans-serif; letter-spacing: .04em; }
+.st-viewswitch, .st-matrix-quali { border-radius: 1000px; padding: 4px; background: transparent; border: 1px solid var(--f1-line-2); }
+.st-viewswitch button, .st-matrix-quali button {
+  border-radius: 1000px; font-family: 'Titillium Web', sans-serif; font-size: 12px; letter-spacing: .02em; padding: 6px 14px; color: var(--f1-text-2);
+}
+.st-viewswitch button.active { background: var(--f1-red); color: #fff; }
+.standings-range { border-radius: 1000px; border-color: var(--f1-line-2); background: transparent; padding: 4px 6px 4px 14px; }
+.standings-range__label { font-family: 'Titillium Web', sans-serif; font-size: 11px; letter-spacing: .04em; }
+.standings-range button, .standings-range__jump { border-radius: 1000px !important; font-family: 'Titillium Web', sans-serif !important; letter-spacing: .02em !important; }
+.title-picture { border-radius: 0 8px 8px 0; border-left-color: var(--f1-red); }
+.st-matrix { font-family: 'Titillium Web', sans-serif; }
+
+/* ── Drivers & Teams: control strip without the boxed background ───────── */
+.dp-controls { background: transparent !important; border: 0 !important; padding: 0 0 8px !important; }
+.dp-controls .label { font-family: 'Titillium Web', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: .02em; color: var(--f1-text-2); }
+.dp-picker { background: transparent; border-right: 1px solid var(--f1-line); }
+.dp-picker__title { font-family: 'Formula1', sans-serif; font-size: 12px; letter-spacing: 0; color: var(--f1-text-2); }
+.dp-picker__team, .dp-picker__chip { border-radius: 8px !important; }
+.dp-picker__name { font-family: 'Titillium Web', sans-serif; font-weight: 700; }
+.dp-picker__team span { font-family: 'Formula1', sans-serif; letter-spacing: 0; }
+
+/* ── Drivers landing grid (F1 driver cards) ───────────────────────────────── */
+.f1-dgrid-wrap { padding: 4px 0 24px 20px; min-width: 0; }
+.f1-dgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 16px;
+}
+.f1-dcard {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  min-height: 190px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  isolation: isolate;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+/* halftone dot texture fading in from the right, like F1's driver cards */
+.f1-dcard::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background-image: radial-gradient(rgba(0,0,0,.28) 1.2px, transparent 1.6px);
+  background-size: 6px 6px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 15%, #000 70%);
+          mask-image: linear-gradient(90deg, transparent 15%, #000 70%);
+}
+/* darken the bottom a touch so text always reads */
+.f1-dcard::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.25));
+}
+.f1-dcard:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.45); }
+.f1-dcard:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.f1-dcard__text {
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 16px 0 14px 16px; min-width: 0; z-index: 1;
+}
+.f1-dcard__first { font-family: 'Formula1', sans-serif; font-weight: 400; font-size: 17px; line-height: 1.15; }
+.f1-dcard__last  { font-family: 'Formula1', sans-serif; font-weight: 700; font-size: 21px; line-height: 1.15; text-transform: none; }
+.f1-dcard__team  { font-family: 'Titillium Web', sans-serif; font-weight: 600; font-size: 12px; margin-top: 2px; opacity: .9; }
+.f1-dcard__num   { margin-top: 12px; min-height: 34px; display: flex; align-items: center; }
+.f1-dcard__flag  { margin-top: auto; line-height: 0; }
+.f1-dcard__flag img { width: 22px; height: 22px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(255,255,255,.6); }
+.f1-dcard__photo {
+  flex: none; width: 52%; display: flex; align-items: flex-end; justify-content: center; align-self: stretch;
+}
+.f1-dcard__photo img {
+  width: auto !important; height: 175px !important; max-width: 100%;
+  object-fit: contain; object-position: bottom; border-radius: 0 !important; border: 0 !important;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+}
+@media (max-width: 760px) {
+  .f1-dgrid-wrap { padding-left: 0; }
+  .f1-dgrid { grid-template-columns: 1fr; }
+}
+
+/* ── Footer (inserted by common.js) ───────────────────────────────────────── */
+.f1-footer {
+  margin-top: 60px;
+  background: #000;
+  border-top: 6px solid var(--f1-red);
+  padding: 28px 24px 36px;
+  color: var(--f1-text-3);
+  font-size: 13px;
+}
+.f1-footer__inner {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
+}
+.f1-footer__logo { height: 24px; width: auto; display: block; margin-right: auto; }
+.f1-footer a { color: #fff; font-weight: 600; }
+.f1-footer a:hover { color: var(--f1-red-hot); }
+body[data-page="lineups"] .f1-footer,
+body[data-page="radio"] .f1-footer,
+body[data-page="dashboard"] .f1-footer,
+body[data-page="news-writer"] .f1-footer { display: none; }
+
+/* Small screens */
+@media (max-width: 760px) {
+  .f1-util { padding: 0 12px; gap: 12px; }
+  .f1-util .f1-util__label { display: none; }
+  .f1-main { padding: 0 8px; }
+  .btg-nav .btg-logo { margin-right: 12px; }
+  .btg-nav .nav-tab { padding: 0 11px; font-size: 13px; }
+  .btg-nav .nav-tab.active::after { left: 11px; right: 11px; }
+  .f1-pagehead { padding: 24px 14px 12px; }
+}
+.f1-util__support .f1-util__label { margin-left: .3em; }

@@ -339,6 +339,7 @@ body::before {
 /* ── Empty state ─────────────────────────────────────────────────────────── */
 .dp-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
 </style>
+<link rel="stylesheet" href="css/f1-theme.css?v=5">
 </head>
 <body data-page="drivers">
 
@@ -363,14 +364,14 @@ body::before {
       </div>
       <div id="sb-list"></div>
     </div>
-    <div id="detail-panel" class="dp-empty">Select a driver from the list.</div>
+    <div id="detail-panel" class="dp-empty">Loading drivers…</div>
   </div>
   <button class="dp-sidebar-toggle" id="sb-toggle" type="button">☰ Drivers</button>
 </div>
 
 <div class="tfg-attrib">UI by <a href="https://www.patreon.com/c/TFGTools" target="_blank" rel="noopener">TFGTools</a></div>
 
-<script src="js/common.js?v=20261117-profile-team-16"></script>
+<script src="js/common.js?v=f1-theme-1"></script>
 <script src="js/driver-numbers.js?v=20261117-team-atlas-10"></script>
 <script src="js/border-glow.js"></script>
 <script src="teams/f1.js?v=20261117-lineups-photos"></script>
@@ -466,8 +467,7 @@ body::before {
         drivers = BTG.Data.buildDriverList(s, activeSeason, { includeAll: true });
         selectedDriverId = null;
         renderSidebar();
-        document.getElementById('detail-panel').className = 'dp-empty';
-        document.getElementById('detail-panel').innerHTML = 'Select a driver from the list.';
+        showGrid();
         bar.querySelectorAll('.series-tab').forEach(function(x){x.classList.toggle('active',x.getAttribute('data-series')===s);});
       };
       bar.appendChild(t);
@@ -487,8 +487,7 @@ body::before {
       drivers = BTG.Data.buildDriverList(activeSeries, activeSeason, { includeAll: true });
       selectedDriverId = null;
       renderSidebar();
-      document.getElementById('detail-panel').className = 'dp-empty';
-      document.getElementById('detail-panel').innerHTML = 'Select a driver from the list.';
+      showGrid();
     };
   }
 
@@ -542,6 +541,46 @@ body::before {
       return BTG.Roster.teamName(teamName, true) || teamName;
     }
     return teamName;
+  }
+
+  /* F1-style landing grid: one team-coloured card per driver, shown whenever
+     no driver is selected. Clicking a card opens that driver's profile. */
+  function showGrid() {
+    var panel = document.getElementById('detail-panel');
+    if (!panel) return;
+    var list = getSeriesDrivers();
+    panel.className = 'f1-dgrid-wrap';
+    panel.style.removeProperty('--team-rgb');
+    if (!list.length) { panel.innerHTML = '<div class="dp-empty">No drivers this season.</div>'; return; }
+    var html = '<div class="f1-dgrid">';
+    list.forEach(function(d) {
+      var full = d.fullName || d.name || '';
+      var parts = full.split(' ');
+      var last = parts.length > 1 ? parts.pop() : full;
+      var first = parts.length ? parts.join(' ') : '';
+      var team = d.team || d.car || '';
+      var band = (d.team && BTG.teamBandForReversed) ? BTG.teamBandForReversed(d.team) : null;
+      var style = band ? band.style : 'background:linear-gradient(90deg,#303037,#4a4a52);color:#fff';
+      html += '<button class="f1-dcard" type="button" data-id="' + BTG.esc(d.id) + '" style="' + style + '">'
+        + '<span class="f1-dcard__text">'
+        +   '<span class="f1-dcard__first">' + BTG.esc(first) + '</span>'
+        +   '<span class="f1-dcard__last">' + BTG.esc(last) + '</span>'
+        +   '<span class="f1-dcard__team">' + BTG.esc(team ? teamDisplayName(team) : 'Privateer') + '</span>'
+        +   '<span class="f1-dcard__num">' + (d.carNumber ? BTG.numberSlot(d.carNumber, d.team, 34, 'f1-dcard__plate', false, undefined, activeSeason) : '') + '</span>'
+        +   '<span class="f1-dcard__flag">' + (BTG.flagImg ? BTG.flagImg(d.nation, 20, 14, '') : '') + '</span>'
+        + '</span>'
+        + '<span class="f1-dcard__photo">' + BTG.driverPhotoImg(full, 150, '', activeSeason) + '</span>'
+        + '</button>';
+    });
+    html += '</div>';
+    panel.innerHTML = html;
+    if (BTG.numberSlotHydrate) BTG.numberSlotHydrate(panel);
+    panel.querySelectorAll('.f1-dcard').forEach(function(card) {
+      card.onclick = function() {
+        var chip = document.querySelector('#sb-list .dp-picker__chip[data-id="' + CSS.escape(card.dataset.id) + '"]');
+        if (chip) { chip.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      };
+    });
   }
 
   function renderSidebar() {
@@ -634,6 +673,7 @@ body::before {
         renderDetail(selectedDriverId);
       };
     });
+    if (!selectedDriverId) showGrid();
   }
 
   function renderDetail(driverId) {
@@ -1462,8 +1502,7 @@ body::before {
       selectedDriverId = null;
       BTG.resetTeamColors();
       document.querySelectorAll('.dp-picker__chip').forEach(function(x){x.classList.remove('dp-picker__chip--active');});
-      document.getElementById('detail-panel').className = 'dp-empty';
-      document.getElementById('detail-panel').innerHTML = 'Select a driver from the list.';
+      showGrid();
     }
   });
 

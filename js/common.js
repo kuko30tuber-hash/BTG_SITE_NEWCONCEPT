@@ -28,19 +28,54 @@ BTG.renderNav = function(activePage) {
     { id: 'news',      label: 'News',      href: 'news.html' }
   ];
 
-  var html = '<a class="btg-logo" href="index.html"><img class="btg-logo-img" src="logos/BTG.png" alt="BeTheGrid"></a>';
+  // F1-style two-row header: a thin black utility strip, then the main bar.
+  var util = '<div class="f1-util">'
+    + '<a href="https://www.youtube.com/@Bethegrid" target="_blank" rel="noopener" aria-label="YouTube"><img src="logos/Youtube.png" alt=""><span class="f1-util__label">YouTube</span></a>'
+    + '<a href="https://discord.gg/bethegrid" target="_blank" rel="noopener" aria-label="Discord"><img src="logos/Discord.webp" alt=""><span class="f1-util__label">Discord</span></a>'
+    + '<button class="f1-util__support" type="button" onclick="BTG.openDonate()">&#9829; Support<span class="f1-util__label"> the site</span></button>'
+    + '</div>';
+  var main = '<div class="f1-main"><a class="btg-logo" href="index.html"><img class="btg-logo-img" src="logos/BTG.png" alt="BeTheGrid"></a>';
   tabs.forEach(function(t) {
     var cls = 'nav-tab' + (t.id === activePage ? ' active' : '');
-    html += '<a class="' + cls + '" href="' + t.href + '">' + t.label + '</a>';
+    main += '<a class="' + cls + '" href="' + t.href + '"' + (t.id === activePage ? ' aria-current="page"' : '') + '>' + t.label + '</a>';
   });
-  html += '<div class="nav-right">'
-    + '<a class="nav-social" href="https://www.youtube.com/@Bethegrid" target="_blank" rel="noopener" title="YouTube" aria-label="YouTube"><img class="nav-social-img" src="logos/Youtube.png" alt=""></a>'
-    + '<a class="nav-social" href="https://discord.gg/bethegrid" target="_blank" rel="noopener" title="Discord" aria-label="Discord"><img class="nav-social-img" src="logos/Discord.webp" alt=""></a>'
-    + '<button class="nav-donate" type="button" onclick="BTG.openDonate()">'
-    + '<span class="nav-donate-heart">♥</span><span>Support this site\'s development</span>'
-    + '</button>'
+  main += '</div>';
+  nav.innerHTML = util + main;
+  BTG.renderPageHead(activePage);
+  BTG.renderFooter();
+};
+
+/* ── F1-style page title band + footer ─────────────────────────────────────
+   Big uppercase title under the header on content pages. Tool pages that
+   are full-screen apps (lineups, radio, dashboard, news writer) skip it. */
+BTG.PAGE_TITLES = {
+  standings: 'Championship Standings',
+  drivers: 'Drivers',
+  teams: 'Teams',
+  'race-weekend': 'Race Weekend',
+  calendar: 'Race Calendar',
+  news: 'Latest News'
+};
+BTG.renderPageHead = function(page) {
+  var title = BTG.PAGE_TITLES[page];
+  var nav = document.getElementById('btg-nav');
+  if (!title || !nav || document.querySelector('.f1-pagehead')) return;
+  var head = document.createElement('header');
+  head.className = 'f1-pagehead';
+  head.innerHTML = '<h1 class="f1-pagehead__title">' + title + '</h1>';
+  nav.parentNode.insertBefore(head, nav.nextSibling);
+};
+BTG.renderFooter = function() {
+  if (document.querySelector('.f1-footer')) return;
+  var f = document.createElement('footer');
+  f.className = 'f1-footer';
+  f.innerHTML = '<div class="f1-footer__inner">'
+    + '<img class="f1-footer__logo" src="logos/BTG.png" alt="BeTheGrid">'
+    + '<a href="https://www.youtube.com/@Bethegrid" target="_blank" rel="noopener">YouTube</a>'
+    + '<a href="https://discord.gg/bethegrid" target="_blank" rel="noopener">Discord</a>'
+    + '<span>&copy; ' + new Date().getFullYear() + ' BeTheGrid</span>'
     + '</div>';
-  nav.innerHTML = html;
+  document.body.appendChild(f);
 };
 
 /* ── Donate modal (global) ─────────────────────────────────────────────── */
