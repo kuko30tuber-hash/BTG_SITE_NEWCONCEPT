@@ -52,7 +52,6 @@ BTG.PAGE_TITLES = {
   standings: 'Championship Standings',
   drivers: 'Drivers',
   teams: 'Teams',
-  'race-weekend': 'Race Weekend',
   calendar: 'Race Calendar',
   news: 'Latest News'
 };

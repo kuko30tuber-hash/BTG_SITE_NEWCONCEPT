@@ -275,6 +275,7 @@ window.BTG = window.BTG || {};
     var cacheInit = window.BTG.DBCache ? BTG.DBCache.init() : Promise.resolve(null);
     Promise.all([dataInit, cacheInit]).then(function(results) {
       var db = results[1];
+      state.db = db || null;
       if (db && db.races && db.races.length) {
         BTG.Data.getSeriesList = BTG.DBCache.getSeriesList;
         BTG.Data.getSeasons = BTG.DBCache.getSeasons;
@@ -1078,7 +1079,7 @@ window.BTG = window.BTG || {};
     var dnf = !dsq && (!!r.dnf || !!r.DNF || pos >= 99);
     var fl = Number(r.fastestLap != null ? r.fastestLap : r.FastestLap || 0);
     var time = Number(r.finishTime != null ? r.finishTime : r.Time != null ? r.Time : 0);
-    var laps = Number(r.Laps != null ? r.Laps : 0);
+    var laps = Number(r.Laps != null ? r.Laps : (r.laps || 0));
     return {
       DriverID: r.driverId != null ? r.driverId : r.DriverID,
       TeamID: r.teamId != null ? r.teamId : r.TeamID,
@@ -1123,58 +1124,145 @@ window.BTG = window.BTG || {};
   }
 
   /* ── Render ─────────────────────────────────────────────────────────────── */
+  /* ── F1-style page: controls → hero → round strip → highlights → tabs ── */
+  var MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+  /** Round number, dates, laps, country and track photo for the selected race, from the DB cache when it has them. */
+  function raceMeta() {
+    var r = state.selectedRace;
+    if (!r) return null;
+    var idx = state.races.indexOf(r);
+    var meta = { round: idx + 1, total: state.races.length, name: r.name, flag: r.flag, sprint: !!r.isSprintWeekend,
+                 country: '', dates: '', laps: 0, img: null };
+    var db = state.db;
+    if (db && db.races) {
+      var sid = null;
+      (db.race_seasons || []).forEach(function (rs) {
+        if (String(rs.series_id) === String(state.activeSeries) && Number(rs.year) === Number(state.activeSeason)) sid = String(rs.season_id);
+      });
+      var list = (db.races || []).filter(function (x) { return String(x.season_id) === sid; })
+        .sort(function (a, b) { return Number(a.round_number) - Number(b.round_number); });
+      var dbr = list[idx];
+      // Prefer an exact id match (DB-backed series use race_id as the strip id)
+      list.forEach(function (x) { if (String(x.race_id) === String(r.id)) dbr = x; });
+      if (dbr) {
+        meta.country = String(dbr.country || '').replace(/([a-z])([A-Z])/g, '$1 $2');
+        meta.laps = Number(dbr.laps) || 0;
+        if (Number(dbr.weekend_type) === 1 || String(dbr.format || '').toLowerCase() === 'sprint') meta.sprint = true;
+        var d = String(dbr.race_date || '').slice(0, 10).split('-').map(Number);
+        if (d.length === 3 && d[0]) {
+          var end = new Date(Date.UTC(d[0], d[1] - 1, d[2])), start = new Date(Date.UTC(d[0], d[1] - 1, d[2] - 2));
+          meta.dates = start.getUTCMonth() === end.getUTCMonth()
+            ? pad2(start.getUTCDate()) + ' - ' + pad2(end.getUTCDate()) + ' ' + MONTHS[end.getUTCMonth()]
+            : pad2(start.getUTCDate()) + ' ' + MONTHS[start.getUTCMonth()] + ' - ' + pad2(end.getUTCDate()) + ' ' + MONTHS[end.getUTCMonth()];
+          meta.dates += ' ' + d[0];
+        }
+        var c = BTG.circuitBySlug ? BTG.circuitBySlug(dbr.circuit) : null;
+        if (c && c.img) meta.img = 'tracks/' + encodeURIComponent(c.img) + '.webp';
+        if (!meta.flag && c && c.flag) meta.flag = c.flag;
+      }
+    }
+    if (!meta.img && BTG.circuitBySlug) {
+      var c2 = BTG.circuitBySlug(r.slug) || BTG.circuitBySlug(r.name);
+      if (c2 && c2.img) meta.img = 'tracks/' + encodeURIComponent(c2.img) + '.webp';
+    }
+    return meta;
+  }
+
+  function renderControls() {
+    var html = '<div class="rw-controls">';
+    html += '<div class="series-bar">';
+    state.seriesList.forEach(function(f) {
+      html += '<button type="button" class="series-tab' + (f.id === state.activeSeries ? ' active' : '') + '" title="' + escAttr(f.name || f.id) + '" onclick="BTG.RW.setSeries(\'' + escAttr(f.id) + '\')">'
+        + BTG.seriesLogoImg(f.id, 26) + '</button>';
+    });
+    html += '</div><span class="rw-spacer"></span>';
+    html += '<label class="rw-season"><span>Season</span><select id="season-select" onchange="BTG.RW.setSeason(this.value)">';
+    state.seasons.forEach(function(y) {
+      html += '<option value="' + y + '"' + (y === state.activeSeason ? ' selected' : '') + '>' + y + '</option>';
+    });
+    html += '</select></label></div>';
+    return html;
+  }
+
+  function renderHero() {
+    var m = raceMeta();
+    if (!m) {
+      return '<section class="rw-hero rw-hero--empty"><div class="rw-hero__inner"><div class="rw-hero__name">' + (state.loading ? 'Loading…' : 'Select a race') + '</div></div></section>';
+    }
+    var html = '<section class="rw-hero"' + (m.img ? ' style="background-image:url(' + escAttr(m.img) + ')"' : '') + '>';
+    html += '<div class="rw-hero__inner">';
+    html += '<div class="rw-hero__kicker">Round ' + m.round + (m.total ? ' / ' + m.total : '') + ' &middot; ' + esc(state.activeSeries) + ' ' + esc(state.activeSeason)
+      + (m.sprint ? '<span class="rw-tag">Sprint weekend</span>' : '') + '</div>';
+    html += '<div class="rw-hero__name">' + (m.flag ? '<img src="Flags/' + escAttr(m.flag) + '.svg" alt="" onerror="this.style.display=\'none\'">' : '') + esc(m.country || m.name) + '</div>';
+    if (m.country) html += '<div class="rw-hero__gp">' + esc(m.name) + '</div>';
+    html += '<div class="rw-hero__facts">';
+    if (m.dates) html += '<span><b>Dates</b>' + esc(m.dates) + '</span>';
+    if (m.laps) html += '<span><b>Laps</b>' + m.laps + '</span>';
+    html += '</div></div></section>';
+    return html;
+  }
+
+  function renderRoundStrip() {
+    var html = '<div class="rw-rounds" id="rw-rounds">';
+    state.races.forEach(function(r, i) {
+      var on = r.id === state.selectedRaceId;
+      html += '<button type="button" class="rw-round' + (on ? ' rw-round--active' : '') + '" onclick="BTG.RW.selectRace(\'' + escAttr(r.id) + '\')" title="' + esc(r.name) + '"' + (on ? ' aria-current="true"' : '') + '>'
+        + '<span class="rw-round__no">R' + (i + 1) + '</span>'
+        + (r.flag ? '<img src="Flags/' + escAttr(r.flag) + '.svg" alt="" onerror="this.style.display=\'none\'">' : '')
+        + '<span class="rw-round__tag">' + esc(r.tag) + '</span></button>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  /** Fastest lap + Driver of the Day for the race (or the sprint, on the sprint tab). */
+  function renderHighlights() {
+    var isSprint = state.activeTab === 'sprint';
+    var src = isSprint ? state.sprintResult : state.raceResult;
+    if (!src || !src.length) return '';
+    var rows = enrichRaceRows(src, isSprint);
+    if (!rows.length) return '';
+    var fastest = rows.filter(function(r) { return !r.dsq && r.fastestLap > 10; }).sort(function(a, b) { return a.fastestLap - b.fastestLap; })[0];
+    var html = '<div class="rw-highlights">';
+    html += '<section class="rw-hl rw-hl--fl"><div class="rw-hl__label">Fastest Lap' + (isSprint ? ' &middot; Sprint' : '') + '</div>';
+    if (fastest) {
+      html += '<div class="rw-hl__body">' + photoHtml(fastest.driverId, fastest.teamName, 56)
+        + '<div class="rw-hl__who"><div class="rw-hl__name">' + esc(driverDisplayName({ name: fastest.driverId }, 'full')) + '</div>'
+        + '<div class="rw-hl__team" style="color:' + teamColorRgb(fastest.teamName) + '">' + rowLogoHtml(fastest, 16) + '<span>' + esc(rowLabel(fastest)) + '</span></div></div>'
+        + '<div class="rw-hl__big rw-hl__big--purple">' + formatRaceTime(fastest.fastestLap) + '</div></div>';
+      var laps = rows.filter(function(r) { return !r.dsq && r.fastestLap > 10; }).sort(function(a, b) { return a.fastestLap - b.fastestLap; });
+      if (laps[1]) {
+        html += '<div class="rw-votes"><div class="rw-vote"><span class="rw-vote__name" style="font-weight:600;color:#c9c9d0">Next best: ' + esc(driverDisplayName({ name: laps[1].driverId }, 'full')) + '</span>'
+          + '<span class="rw-vote__pct" style="width:auto">' + formatRaceTime(laps[1].fastestLap) + '</span></div>'
+          + '<div class="rw-vote"><span class="rw-vote__name" style="font-weight:600;color:#c9c9d0">Margin</span><span class="rw-vote__pct" style="width:auto;color:#c084fc">-' + (laps[1].fastestLap - fastest.fastestLap).toFixed(3) + 's</span></div>'
+          + (laps[2] ? '<div class="rw-vote"><span class="rw-vote__name" style="font-weight:600;color:#c9c9d0">3rd best: ' + esc(driverDisplayName({ name: laps[2].driverId }, 'full')) + '</span><span class="rw-vote__pct" style="width:auto">' + formatRaceTime(laps[2].fastestLap) + '</span></div>' : '')
+          + '</div>';
+      }
+    } else {
+      html += '<div class="rw-hl__none">No lap times recorded.</div>';
+    }
+    html += '</section>';
+    html += renderDriverOfDay(rows, isSprint);
+    html += '</div>';
+    return html;
+  }
+
   function render() {
     if (!appEl) return;
     var html = '';
+    html += renderControls();
+    html += renderHero();
+    if (state.races.length) html += renderRoundStrip();
+    if (!state.loading && state.selectedRace) html += renderHighlights();
 
-    // PageHeader (TFG PageHeader)
-    html += '<section class="rounded-md border border-white/[0.07] bg-[#161618] p-5">';
-    html += '  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">';
-    html += '    <div>';
-    html += '      <div class="text-[11px] font-bold uppercase tracking-[0.14em] text-accent-light">Race Weekend</div>';
-    html += '      <h2 class="mt-1 text-xl font-bold text-white">' + esc(state.selectedRace ? state.selectedRace.name : 'Select a Race') + '</h2>';
-    html += '    </div>';
-    html += '    <div class="flex items-center gap-3">';
-    html += '      <label class="flex items-center gap-3">';
-    html += '        <span class="text-sm font-medium text-secondary-text">Season</span>';
-    html += '        <select onchange="BTG.RW.setSeason(this.value)" class="border border-white/10 bg-black/10 px-3 py-2 text-sm text-white outline-none transition focus:border-sky-300/50">';
-    state.seasons.forEach(function(y) {
-      html += '          <option value="' + y + '" class="bg-[#182026] text-white"' + (y === state.activeSeason ? ' selected' : '') + '>' + y + '</option>';
-    });
-    html += '        </select>';
-    html += '      </label>';
-    html += '    </div>';
-    html += '  </div>';
-    // belowSlot = RaceStrip
-    html += '  <div class="mt-4 pt-4 border-t border-white/[0.06]">';
-    html += renderRaceStrip();
-    html += '  </div>';
-    html += '</section>';
+    html += '<div class="rw-tabs">' + renderTabs() + '</div>';
 
-    // Formula switcher
-    html += '<div class="flex items-center justify-between px-1 mt-4">';
-    html += '  <div style="font-size:22px;font-weight:800;color:#f4f4f5;line-height:1.2;border-left:4px solid ' + seriesColor() + ';padding-left:12px;">' + esc(state.activeSeries) + ' Race Weekend</div>';
-    html += '  <div style="display:flex;gap:8px;flex-shrink:0;">';
-    state.seriesList.forEach(function(f) {
-      if (f.id === state.activeSeries) return;
-      html += '<button onclick="BTG.RW.setSeries(\'' + escAttr(f.id) + '\')" class="rw-switcher-btn">';
-      html += BTG.seriesLogoImg(f.id).replace('class="dp-series-logo"', 'class="rw-series-logo"');
-      html += '</button>';
-    });
-    html += '  </div>';
-    html += '</div>';
-
-    // Tabs
-    html += '<div class="rw-tabs mt-2">';
-    html += renderTabs();
-    html += '</div>';
-
-    // Content
-    html += '<div class="content-panel mt-4">';
+    html += '<div class="content-panel">';
     if (state.loading) {
-      html += '<div class="text-center text-sm text-muted-text py-10">Loading race data…</div>';
+      html += '<div class="rw-empty">Loading race data…</div>';
     } else if (!state.selectedRace) {
-      html += '<div class="text-center text-sm text-muted-text py-10">Select a race from the strip above.</div>';
+      html += '<div class="rw-empty">Select a round above.</div>';
     } else {
       html += renderActiveTab();
     }
@@ -1182,46 +1270,36 @@ window.BTG = window.BTG || {};
 
     appEl.innerHTML = html;
 
-    // Re-bind hover row effects (event delegation via data-row)
-    appEl.querySelectorAll('[data-row]').forEach(function(el) {
-      el.addEventListener('mouseover', function(e) {
-        var cell = e.target.closest('[data-row]');
-        if (!cell) return;
-        var grid = cell.closest('.rw-result-grid');
-        if (!grid) return;
-        var idx = cell.getAttribute('data-row');
-        grid.querySelectorAll('.rw-result-grid > div').forEach(function(c) {
-          c.classList.remove('!bg-white/[0.05]');
-        });
-        grid.querySelectorAll('[data-row="' + idx + '"]').forEach(function(c) {
-          c.classList.add('!bg-white/[0.05]');
-        });
-      });
-    });
-    appEl.querySelectorAll('.rw-result-grid').forEach(function(grid) {
-      grid.addEventListener('mouseleave', function() {
-        grid.querySelectorAll('.rw-result-grid > div').forEach(function(c) { c.classList.remove('!bg-white/[0.05]'); });
-      });
-    });
+    // Keep the selected round visible in the scrolling strip
+    var strip = document.getElementById('rw-rounds');
+    var active = strip && strip.querySelector('.rw-round--active');
+    if (active) strip.scrollLeft = active.offsetLeft - strip.clientWidth / 2 + active.clientWidth / 2;
   }
 
-  function renderRaceStrip() {
-    var html = '<div class="rw-strip">';
-    state.races.forEach(function(r) {
-      var isSelected = r.id === state.selectedRaceId;
-      var isCompleted = true; // all BTG races considered completed
-      var cls = isSelected
-        ? 'rw-strip__btn rw-strip__btn--active'
-        : isCompleted ? 'rw-strip__btn' : 'rw-strip__btn rw-strip__btn--future';
-      html += '<button class="' + cls + '" onclick="BTG.RW.selectRace(\'' + escAttr(r.id) + '\')" title="' + esc(r.name) + '">';
-      if (r.flag) {
-        html += '<img src="Flags/' + r.flag + '.svg" alt="" class="h-3.5 border border-white/10 rounded-sm" style="height:14px;width:auto;" onerror="this.style.display=\'none\';">';
-      }
-      html += '<span class="whitespace-nowrap">' + esc(r.tag) + '</span>';
-      html += '</button>';
+  /** F1-style results table. cols: [{label, cls}], rows: [{color, cells:[html], cls}] */
+  function f1Table(cols, rows) {
+    var html = '<div class="rwt-wrap"><table class="rwt"><thead><tr>';
+    cols.forEach(function(c) { html += '<th class="' + (c.cls || '') + '">' + c.label + '</th>'; });
+    html += '</tr></thead><tbody>';
+    rows.forEach(function(r) {
+      html += '<tr class="' + (r.cls || '') + '" style="--tc:' + (r.color || 'rgb(110,110,118)') + '">';
+      r.cells.forEach(function(cell, i) { html += '<td class="' + (cols[i].cls || '') + '">' + cell + '</td>'; });
+      html += '</tr>';
     });
-    html += '</div>';
+    html += '</tbody></table></div>';
     return html;
+  }
+  function posBadge(pos, dnf, dsq) {
+    if (dsq) return '<span class="rwt-pos rwt-pos--out">DSQ</span>';
+    if (dnf) return '<span class="rwt-pos rwt-pos--out">DNF</span>';
+    return '<span class="rwt-pos' + (Number(pos) === 1 ? ' rwt-pos--p1' : '') + '">' + (pos || '—') + '</span>';
+  }
+  function driverCell(name, teamName, mode) {
+    return '<span class="rwt-driver">' + photoHtml(name, teamName, 30) + '<span class="rwt-driver__name">' + esc(driverDisplayName({ name: name }, mode || 'full')) + '</span></span>';
+  }
+  function teamCell(row) {
+    var label = rowLabel(row);
+    return '<span class="rwt-team">' + rowLogoHtml(row, 16) + '<span>' + esc(label) + '</span></span>';
   }
 
   function renderTabs() {
@@ -1232,14 +1310,14 @@ window.BTG = window.BTG || {};
     var hasQuali = state.qualiQ1.length || state.qualiQ2.length || state.qualiQ3.length;
     var hasCars = state.raceResult.some(function(r) { return r.carName; });
 
-    if (hasPractice) tabs.push({ id: 'practice', label: '🔧 Practice' });
-    tabs.push({ id: 'quali', label: '⏱️ Qualifying' });
-    tabs.push({ id: 'grid', label: '📋 Starting Grid' });
-    if (hasSprintQuali) tabs.push({ id: 'sprint-quali', label: '⚡ Sprint Quali' });
-    if (hasSprint) tabs.push({ id: 'sprint', label: '⚡ Sprint Race' });
-    if (hasSprint && (hasQuali || hasSprintQuali)) tabs.push({ id: 'sprint-grid', label: '⚡ Sprint Grid' });
-    if (hasCars) tabs.push({ id: 'h2h', label: '⚔️ Head-to-Head' });
-    tabs.push({ id: 'race', label: '🏁 Race Result' });
+    if (hasPractice) tabs.push({ id: 'practice', label: 'Practice' });
+    tabs.push({ id: 'quali', label: 'Qualifying' });
+    tabs.push({ id: 'grid', label: 'Starting Grid' });
+    if (hasSprintQuali) tabs.push({ id: 'sprint-quali', label: 'Sprint Qualifying' });
+    if (hasSprint) tabs.push({ id: 'sprint', label: 'Sprint' });
+    if (hasSprint && (hasQuali || hasSprintQuali)) tabs.push({ id: 'sprint-grid', label: 'Sprint Grid' });
+    if (hasCars) tabs.push({ id: 'h2h', label: 'Head-to-Head' });
+    tabs.push({ id: 'race', label: 'Race' });
 
     // Ensure activeTab is valid
     if (!tabs.some(function(t) { return t.id === state.activeTab; })) state.activeTab = 'race';
@@ -1256,7 +1334,7 @@ window.BTG = window.BTG || {};
       case 'grid': return renderStartingGrid(state.raceResult);
       case 'sprint-quali': return renderQualiGrid(state.sprintQualiQ1, state.sprintQualiQ2, state.sprintQualiQ3, null);
       case 'sprint': return renderRaceWeekendDetail(state.sprintResult, true);
-      case 'sprint-grid': return renderStartingGrid(state.raceResult, '⚡ Sprint Grid');
+      case 'sprint-grid': return renderStartingGrid(state.raceResult, 'Sprint Grid');
       case 'h2h': return renderHeadToHead();
       case 'race':
       default: return renderRaceWeekendDetail(state.raceResult, false);
@@ -1371,30 +1449,18 @@ window.BTG = window.BTG || {};
       });
     });
     rows.sort(function(a, b) { return a.pos - b.pos; });
-    var cols = entryColumns(rows);
-    grid = buildQualiGridMeta(viewportWidth, cols);
-    var header = ['Pos', 'Driver'].concat(cols, ['Q1', 'Q2', 'Q3', 'Gap to Pole']);
-
-    var html = '<div class="overflow-x-auto max-w-full rounded border border-white/[0.07] bg-white/[0.03]">';
-    html += '<div class="w-full max-w-full min-w-0" style="min-width:' + grid.minWidth + 'px;">';
-    html += '<div class="rw-result-grid grid w-full max-w-full min-w-0" style="grid-template-columns:' + grid.template + ';font-size:11px;">';
-    header.forEach(function(h, i) {
-      html += '<div class="min-w-0 overflow-hidden px-1 py-2 leading-tight border-b border-white/10 bg-base-header font-black uppercase tracking-[0.04em] text-muted-text ' + (i === 1 ? 'cell-driver' : i === 2 ? 'cell-team' : 'cell-data') + '" style="font-size:9px;">' + h + '</div>';
-    });
-    rows.forEach(function(r, idx) {
-      var rowBg = idx % 2 === 1 ? 'bg-black/25' : 'bg-white/[0.018]';
+    var qcols = [{ label: 'Pos', cls: 'c-pos' }, { label: 'Driver', cls: 'c-driver' }, { label: 'Team', cls: 'c-team' },
+      { label: 'Q1', cls: 'c-num' }, { label: 'Q2', cls: 'c-num' }, { label: 'Q3', cls: 'c-num' }, { label: 'Gap', cls: 'c-num c-strong' }];
+    function qt(v, fast) { return '<span class="' + (fast ? 'rwt-purple' : '') + '">' + formatRaceTime(v) + '</span>'; }
+    return f1Table(qcols, rows.map(function(r) {
       var dnf = r.pos >= 99;
-      var isPole = r.gap === 'Pole';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 cell-pos border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '"><span class="inline-flex h-6 w-8 items-center justify-center rounded border font-mono text-[10px] font-black ' + posTone(r.pos, dnf) + '">' + (dnf ? 'DNF' : r.pos) + '</span></div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 cell-driver border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + (grid.compactMode !== 'compact' ? photoHtml(r.key, r.teamName, 24) : '') + '<span class="min-w-0 truncate font-black text-white">' + esc(r.key) + '</span></div>';
-      html += entryCellsHtml(r, cols, grid.compactMode, 14, rowBg, idx);
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-data border-b border-white/[0.04] ' + rowBg + (r.q1Fast ? ' text-purple-400 font-black' : ' text-secondary-text') + '" data-row="' + idx + '">' + formatRaceTime(r.q1) + '</div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-data border-b border-white/[0.04] ' + rowBg + (r.q2Fast ? ' text-purple-400 font-black' : ' text-secondary-text') + '" data-row="' + idx + '">' + formatRaceTime(r.q2) + '</div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-data border-b border-white/[0.04] ' + rowBg + (r.q3Fast ? ' text-purple-400 font-black' : ' text-secondary-text') + '" data-row="' + idx + '">' + formatRaceTime(r.q3) + '</div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono font-black cell-last cell-data border-b border-white/[0.04] ' + rowBg + (isPole ? ' text-yellow-300' : ' text-accent-light') + '" data-row="' + idx + '">' + r.gap + '</div>';
-    });
-    html += '</div></div></div>';
-    return html;
+      return {
+        color: teamColorRgb(r.teamName),
+        cells: [posBadge(r.pos, dnf, false), driverCell(r.key, r.teamName), teamCell(r),
+          qt(r.q1, r.q1Fast), qt(r.q2, r.q2Fast), qt(r.q3, r.q3Fast),
+          '<span class="' + (r.gap === 'Pole' ? 'rwt-pole' : '') + '">' + r.gap + '</span>']
+      };
+    }));
   }
 
   function minTime(arr) {
@@ -1494,28 +1560,18 @@ window.BTG = window.BTG || {};
       var bb = b.p3 || b.p2 || b.p1 || Infinity;
       return ab - bb;
     });
-    var cols = entryColumns(rows);
-    var grid = buildQualiGridMeta(viewportWidth, cols);
-    var header = ['Pos', 'Driver'].concat(cols, ['FP1', 'FP2', 'FP3', 'Laps']);
     var p1f = minTime(p1), p2f = minTime(p2), p3f = minTime(p3);
-    var html = '<div class="overflow-x-auto max-w-full rounded border border-white/[0.07] bg-white/[0.03]">';
-    html += '<div class="w-full max-w-full min-w-0" style="min-width:' + grid.minWidth + 'px;">';
-    html += '<div class="rw-result-grid grid w-full max-w-full min-w-0" style="grid-template-columns:' + grid.template + ';font-size:11px;">';
-    header.forEach(function(h, i) {
-      html += '<div class="min-w-0 overflow-hidden px-1 py-2 leading-tight border-b border-white/10 bg-base-header font-black uppercase tracking-[0.04em] text-muted-text ' + (i === 1 ? 'cell-driver' : i === 2 ? 'cell-team' : 'cell-data') + '" style="font-size:9px;">' + h + '</div>';
-    });
-    rows.forEach(function(r, idx) {
-      var rowBg = idx % 2 === 1 ? 'bg-black/25' : 'bg-white/[0.018]';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 cell-pos border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '"><span class="inline-flex h-6 w-8 items-center justify-center rounded border font-mono text-[10px] font-black ' + posTone(idx + 1, false) + '">' + (idx + 1) + '</span></div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 cell-driver border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + (grid.compactMode !== 'compact' ? photoHtml(r.key, r.teamName, 24) : '') + '<span class="min-w-0 truncate font-black text-white">' + esc(r.key) + '</span></div>';
-      html += entryCellsHtml(r, cols, grid.compactMode, 14, rowBg, idx);
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-data border-b border-white/[0.04] ' + rowBg + (p1f && r.p1 && Number(r.p1).toFixed(3) === p1f.toFixed(3) ? ' text-purple-400 font-black' : ' text-secondary-text') + '" data-row="' + idx + '">' + formatRaceTime(r.p1) + '</div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-data border-b border-white/[0.04] ' + rowBg + (p2f && r.p2 && Number(r.p2).toFixed(3) === p2f.toFixed(3) ? ' text-purple-400 font-black' : ' text-secondary-text') + '" data-row="' + idx + '">' + formatRaceTime(r.p2) + '</div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-data border-b border-white/[0.04] ' + rowBg + (p3f && r.p3 && Number(r.p3).toFixed(3) === p3f.toFixed(3) ? ' text-purple-400 font-black' : ' text-secondary-text') + '" data-row="' + idx + '">' + formatRaceTime(r.p3) + '</div>';
-      html += '<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-last cell-data border-b border-white/[0.04] ' + rowBg + ' text-secondary-text" data-row="' + idx + '">' + ((r.p1Laps || 0) + (r.p2Laps || 0) + (r.p3Laps || 0) || '—') + '</div>';
-    });
-    html += '</div></div></div>';
-    return html;
+    function pt(v, f) { return '<span class="' + (f && v && Number(v).toFixed(3) === f.toFixed(3) ? 'rwt-purple' : '') + '">' + formatRaceTime(v) + '</span>'; }
+    var pcols = [{ label: 'Pos', cls: 'c-pos' }, { label: 'Driver', cls: 'c-driver' }, { label: 'Team', cls: 'c-team' },
+      { label: 'FP1', cls: 'c-num' }, { label: 'FP2', cls: 'c-num' }, { label: 'FP3', cls: 'c-num' }, { label: 'Laps', cls: 'c-num' }];
+    return f1Table(pcols, rows.map(function(r, idx) {
+      return {
+        color: teamColorRgb(r.teamName),
+        cells: [posBadge(idx + 1), driverCell(r.key, r.teamName), teamCell(r),
+          pt(r.p1, p1f), pt(r.p2, p2f), pt(r.p3, p3f),
+          String(((r.p1Laps || 0) + (r.p2Laps || 0) + (r.p3Laps || 0)) || '—')]
+      };
+    }));
   }
 
   /* ── Race / sprint detail (TFG RaceWeekendDetail) ───────────────────────── */
@@ -1529,85 +1585,49 @@ window.BTG = window.BTG || {};
     // so CSS grid auto-placement never shifts rows out of alignment.
     var hasPitData = rows.some(function(r) { return r.pitStops > 0 || r.pitTotal > 0; });
     var hasOvertakes = rows.some(function(r) { return r.overtakes != null; });
-    var cols = entryColumns(rows);
-    var grid = buildRaceResultGridMeta(viewportWidth, isSprint, hasPitData, hasOvertakes, cols);
-    var compactMode = grid.compactMode;
-    var podium = rows.filter(function(r) { return !r.dsq && r.finishingPos > 0 && r.finishingPos <= 3; }).sort(function(a, b) { return a.finishingPos - b.finishingPos; });
-    var winnerTeamId = podium[0] ? podium[0].teamId : null;
-    var fastest = rows.filter(function(r) { return !r.dsq && r.fastestLap > 10; }).sort(function(a, b) { return a.fastestLap - b.fastestLap; })[0];
     var bestPit = rows.filter(function(r) { return !r.dsq && r.pitBest > 0; }).sort(function(a, b) { return a.pitBest - b.pitBest; })[0];
+    var fastest = rows.filter(function(r) { return !r.dsq && r.fastestLap > 10; }).sort(function(a, b) { return a.fastestLap - b.fastestLap; })[0];
     var fastestTime = fastest ? fastest.fastestLap : 0;
+    var winnerTime = rows[0] && !rows[0].dnf && !rows[0].dsq ? rows[0].finishTime : 0;
+    var winnerLaps = rows[0] ? Number(rows[0].Laps || 0) : 0;
 
-    var html = '<div class="overflow-hidden border border-white/10 bg-base-deep shadow-[0_0_0_1px_rgba(255,255,255,0.02),0_18px_60px_rgba(0,0,0,0.35)]">';
+    var cols = [{ label: 'Pos', cls: 'c-pos' }, { label: 'Driver', cls: 'c-driver' }, { label: 'Team', cls: 'c-team' },
+      { label: 'Grid', cls: 'c-num c-hide-sm' }, { label: '+/-', cls: 'c-num c-hide-sm' }, { label: 'Time / Gap', cls: 'c-num' },
+      { label: 'Best Lap', cls: 'c-num c-hide-sm' }];
+    if (hasPitData) cols.push({ label: 'Stops', cls: 'c-num c-hide-sm' });
+    if (hasOvertakes) cols.push({ label: 'Overtakes', cls: 'c-num c-hide-md' });
+    cols.push({ label: 'Pts', cls: 'c-num c-strong' });
 
-    // Header
-    html += '<div class="flex flex-col gap-3 border-b border-white/10 bg-white/[0.025] p-4 lg:flex-row lg:items-center lg:justify-between">';
-    html += '  <div class="min-w-0">';
-    html += '    <div class="text-[10px] font-bold uppercase tracking-[0.14em] text-accent-light">' + (isSprint ? 'Sprint Classification' : 'Race Classification') + '</div>';
-    html += '    <h3 class="mt-1 truncate text-xl font-black text-white">' + esc(state.selectedRace ? state.selectedRace.name : (isSprint ? 'Sprint Result' : 'Race Result')) + '</h3>';
-    html += '  </div>';
-    html += '  <div class="grid grid-cols-2 gap-2">';
-    html += statTile(fastest ? formatRaceTime(fastest.fastestLap) : '—', 'Fastest Lap', fastest ? driverDisplayName({ name: fastest.driverId }, 'full') : undefined, 'text-purple-400');
-    if (!isSprint && hasPitData) html += statTile(bestPit ? formatSeconds(bestPit.pitBest) : '—', 'Best Stop', bestPit ? driverDisplayName({ name: bestPit.driverId }, 'full') : undefined, 'text-emerald-400');
-    html += '  </div>';
-    html += '</div>';
-
-    html += '<div class="space-y-4 p-4">';
-
-    // Driver of the Day + Podium
-    html += '<div class="grid items-stretch gap-4 xl:grid-cols-2">';
-    html += renderDriverOfDay(rows, isSprint);
-    html += renderPodium(podium, winnerTeamId);
-    html += '</div>';
-
-    // Result grid
-    html += '<section class="' + (grid.allowScroll ? 'overflow-x-auto' : 'overflow-hidden') + ' max-w-full rounded border border-white/[0.07] bg-white/[0.03]">';
-    html += '<div class="w-full max-w-full min-w-0" style="min-width:' + (grid.allowScroll ? grid.minWidth : 0) + 'px;">';
-    html += '<div class="rw-result-grid grid w-full max-w-full min-w-0" style="grid-template-columns:' + grid.template + ';font-size:10px;">';
-
-    // Always emit the full column set; collapsed (0px) tracks for missing data keep
-    // the grid template length == cells-per-row, so rows never staircase.
-    // Team and Car are separate columns when the series has both.
-    var cols = entryColumns(rows);
-    var headers = ['Pos', 'Driver'].concat(cols, ['Finish Time', 'Gap Ahead', 'Start', 'Finish', 'Places', 'Points']);
-    if (!isSprint) headers = headers.concat(['Stops', 'Pit Time', 'Fastest Stop', 'Avg Lap', 'Overtakes']);
-    headers.push('Best Lap');
-    // Which header cells are collapsed to 0px (matching the template zeroing).
-    var hiddenMask = [false, false];
-    cols.forEach(function() { hiddenMask.push(false); });
-    hiddenMask = hiddenMask.concat([false, false, false, false, false, false, false]);
-    if (!isSprint) hiddenMask = hiddenMask.concat([!hasPitData, !hasPitData, !hasPitData, false, !hasOvertakes]);
-    hiddenMask.push(false);
-    headers.forEach(function(h, i) {
-      html += '<div class="min-w-0 px-1 py-2 leading-tight border-b border-white/10 bg-base-header font-black uppercase tracking-[0.04em] text-muted-text ' + (i === 1 ? 'cell-driver' : i >= 2 && i < 2 + cols.length ? 'cell-team' : 'cell-data') + (hiddenMask[i] ? ' cell-hidden' : '') + '" style="font-size:8px;">' + h + '</div>';
-    });
-
-    rows.forEach(function(r, idx) {
-      var rowBg = idx % 2 === 1 ? 'bg-black/25' : 'bg-white/[0.018]';
-      var dnf = r.dnf, dsq = r.dsq;
-      var cells = [];
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 cell-pos border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '"><span class="inline-flex h-6 w-7 items-center justify-center rounded border font-mono text-[10px] font-black ' + posTone(r.finishingPos, dnf, dsq) + '">' + (dsq ? 'DSQ' : dnf ? 'DNF' : r.finishingPos) + '</span></div>');
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 cell-driver border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + (compactMode !== 'lastNoPhoto' ? photoHtml(r.driverId, r.teamName, 22) : '') + '<span class="min-w-0 truncate font-black text-white">' + esc(driverDisplayName({ name: r.driverId }, compactMode)) + '</span></div>');
-      cells.push(entryCellsHtml(r, cols, compactMode, 14, rowBg, idx));
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + (dnf || dsq ? '-' : formatRaceTime(r.finishTime)) + '</div>');
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + (dnf || dsq ? '-' : formatGap(r.gapToNext)) + '</div>');
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + (r.startingPos || '—') + '</div>');
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + (dsq ? 'DSQ' : dnf ? 'DNF' : r.finishingPos || '—') + '</div>');
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono font-black cell-data border-b border-white/[0.04] ' + rowBg + (r.positionsGained > 0 ? ' text-emerald-300' : r.positionsGained < 0 ? ' text-red-300' : ' text-muted-text') + '" data-row="' + idx + '">' + (r.positionsGained == null ? '—' : r.positionsGained > 0 ? '+' + r.positionsGained : r.positionsGained) + '</div>');
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono font-black text-yellow-300 cell-data border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + r.points + (r.bonusPoints > 0 ? '<span class="text-emerald-300" title="+' + r.bonusPoints + ' bonus (fastest lap / pole)">+' + r.bonusPoints + '</span>' : '') + '</div>');
-      if (!isSprint) {
-        cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + (!hasPitData ? ' cell-hidden' : '') + '" data-row="' + idx + '">' + (hasPitData ? (r.pitStops || '—') : '—') + '</div>');
-        cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + (!hasPitData ? ' cell-hidden' : '') + '" data-row="' + idx + '">' + (hasPitData ? formatSeconds(r.pitTotal) : '—') + '</div>');
-        cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono ' + (hasPitData && bestPit && r.pitBest > 0 && r.pitBest === bestPit.pitBest ? 'text-emerald-300 font-black' : 'text-secondary-text') + ' cell-data border-b border-white/[0.04] ' + rowBg + (!hasPitData ? ' cell-hidden' : '') + '" data-row="' + idx + '">' + (hasPitData ? (r.pitBest > 0 ? formatSeconds(r.pitBest) : '—') : '—') + '</div>');
-        cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + '" data-row="' + idx + '">' + formatRaceTime(r.avgLap) + '</div>');
-        cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono text-secondary-text cell-data border-b border-white/[0.04] ' + rowBg + (!hasOvertakes ? ' cell-hidden' : '') + '" data-row="' + idx + '">' + (r.overtakes == null ? '—' : r.overtakes) + '</div>');
+    var tableRows = rows.map(function(r, idx) {
+      var timeGap;
+      if (r.dsq) timeGap = 'DSQ';
+      else if (r.dnf) timeGap = 'DNF';
+      else if (winnerLaps > 0 && Number(r.Laps) > 0 && Number(r.Laps) < winnerLaps) {
+        var down = winnerLaps - Number(r.Laps);   // lapped cars: F1 shows laps down, not time
+        timeGap = '+' + down + (down === 1 ? ' Lap' : ' Laps');
       }
-      cells.push('<div class="min-w-0 overflow-hidden truncate px-1 py-1 font-mono cell-last cell-data border-b border-white/[0.04] ' + rowBg + (r.fastestLap > 10 && r.fastestLap === fastestTime ? ' text-purple-400 font-black' : ' text-secondary-text') + '" data-row="' + idx + '">' + formatRaceTime(r.fastestLap) + '</div>');
-      html += cells.join('');
+      else if (idx === 0 || !(r.finishTime > 0) || !(winnerTime > 0)) timeGap = formatRaceTime(r.finishTime);
+      else timeGap = '+' + (r.finishTime - winnerTime).toFixed(3) + 's';
+      var gained = r.positionsGained;
+      var cells = [
+        posBadge(r.finishingPos, r.dnf, r.dsq),
+        driverCell(r.driverId, r.teamName),
+        teamCell(r),
+        String(r.startingPos || '—'),
+        gained == null ? '—' : '<span class="' + (gained > 0 ? 'rwt-up' : gained < 0 ? 'rwt-down' : '') + '">' + (gained > 0 ? '▲' + gained : gained < 0 ? '▼' + (-gained) : '–') + '</span>',
+        timeGap,
+        '<span class="' + (r.fastestLap > 10 && r.fastestLap === fastestTime ? 'rwt-purple' : '') + '">' + formatRaceTime(r.fastestLap) + '</span>'
+      ];
+      if (hasPitData) cells.push(String(r.pitStops || '—'));
+      if (hasOvertakes) cells.push(r.overtakes == null ? '—' : String(r.overtakes));
+      cells.push(String(r.points) + (r.bonusPoints > 0 ? '<span class="rwt-up" title="Bonus points (fastest lap / pole)">+' + r.bonusPoints + '</span>' : ''));
+      return { color: teamColorRgb(r.teamName), cls: (r.dnf || r.dsq) ? 'rwt-out' : '', cells: cells };
     });
 
-    html += '</div></div></section>';
-    html += '</div></div>'; // space-y-4, outer
+    var html = '<div class="rw-results-head"><h3 class="rw-section-title">' + (isSprint ? 'Sprint Classification' : 'Race Classification') + '</h3>';
+    if (!isSprint && hasPitData && bestPit) html += '<span class="rw-chip">Fastest stop: <b>' + formatSeconds(bestPit.pitBest) + '</b> &middot; ' + esc(driverDisplayName({ name: bestPit.driverId }, 'full')) + '</span>';
+    html += '</div>';
+    html += f1Table(cols, tableRows);
     return html;
   }
 
@@ -1881,27 +1901,31 @@ window.BTG = window.BTG || {};
 
     var winner = candidates[0];
     if (!winner) {
-      return '<section class="rounded border border-white/[0.07] bg-white/[0.03] p-3"><div class="text-[11px] font-black uppercase tracking-[0.14em] text-muted-text">Driver of the Day</div><div class="text-center text-sm text-muted-text py-4">No eligible driver data.</div></section>';
+      return '<section class="rw-hl"><div class="rw-hl__label">Driver of the Day</div><div class="rw-hl__none">No eligible driver data.</div></section>';
     }
     var voteTotal = candidates.reduce(function(s, c) { return s + Math.max(0, c.dotdScore); }, 0) || 1;
     var topVotes = candidates.slice(0, 4).map(function(c) { return { c: c, votePct: (Math.max(0, c.dotdScore) / voteTotal) * 100 }; });
     var others = topVotes.slice(1, 4);
 
-    var html = '<div class="border-glow-card" style="--team-rgb:' + teamRegistryTriplet(winner.teamId) + ';--border-radius:0px;--card-bg:#090a0f;--glow-padding:18px;">';
-    html += '<span class="edge-light"></span>';
-    html += '<div class="border-glow-inner"><section class="h-full rounded border border-white/[0.07] bg-white/[0.03] p-3 shadow-[inset_0_0_24px_rgba(245,158,11,0.04)]">';
-    html += '<div class="flex items-center justify-between gap-2"><div class="text-[11px] font-black uppercase tracking-[0.14em]" style="color:' + teamColorRgb(winner.teamName) + '">Driver of the Day</div><div class="text-2xl font-black leading-none" style="color:' + teamColorRgb(winner.teamName) + '">' + topVotes[0].votePct.toFixed(1) + '%</div></div>';
-    html += '<div class="mt-3 flex items-center gap-3">' + photoHtml(winner.driverId, winner.teamName, 56) + '<div class="min-w-0 flex-1"><div class="truncate text-[16px] font-black" style="color:#ffffff">' + esc(driverDisplayName({ name: winner.driverId }, 'full')) + '</div><div class="mt-1 flex items-center gap-2 text-xs font-bold" style="color:' + teamColorRgb(winner.teamName) + '">' + rowLogoHtml(winner, 18) + '<span class="truncate">' + esc(rowLabel(winner)) + '</span></div></div></div>';
-    html += '<div class="mt-4 space-y-2.5">';
-    others.forEach(function(o, idx) {
-      var c = o.c;
-      html += '<div class="flex items-center gap-2 text-xs">';
-      html += '<span class="w-4 text-right font-mono font-black text-muted-text">' + (idx + 2) + '</span>';
-      html += '<span class="truncate font-black text-white">' + esc(driverDisplayName({ name: c.driverId }, 'full')) + '</span>';
-      html += '<div class="ml-auto flex items-center gap-2"><div class="h-1.5 w-16 overflow-hidden rounded bg-white/[0.06]"><div class="h-full" style="width:' + Math.max(3, o.votePct) + '%;background:' + teamColorRgb(c.teamName) + ';"></div></div><span class="w-10 text-right font-mono font-black text-white">' + o.votePct.toFixed(1) + '%</span></div>';
+    var tc = teamColorRgb(winner.teamName);
+    var html = '<section class="rw-hl rw-hl--dotd" style="--tc:' + tc + '">';
+    html += '<div class="rw-hl__label">Driver of the Day' + (isSprint ? ' &middot; Sprint' : '') + '</div>';
+    html += '<div class="rw-hl__body">' + photoHtml(winner.driverId, winner.teamName, 56)
+      + '<div class="rw-hl__who"><div class="rw-hl__name">' + esc(driverDisplayName({ name: winner.driverId }, 'full')) + '</div>'
+      + '<div class="rw-hl__team" style="color:' + tc + '">' + rowLogoHtml(winner, 16) + '<span>' + esc(rowLabel(winner)) + '</span></div></div>'
+      + '<div class="rw-hl__big">' + topVotes[0].votePct.toFixed(1) + '%</div></div>';
+    if (others.length) {
+      html += '<div class="rw-votes">';
+      others.forEach(function(o, idx) {
+        var c = o.c;
+        html += '<div class="rw-vote"><span class="rw-vote__pos">' + (idx + 2) + '</span>'
+          + '<span class="rw-vote__name">' + esc(driverDisplayName({ name: c.driverId }, 'full')) + '</span>'
+          + '<span class="rw-vote__bar"><i style="width:' + Math.max(3, o.votePct) + '%;background:' + teamColorRgb(c.teamName) + '"></i></span>'
+          + '<span class="rw-vote__pct">' + o.votePct.toFixed(1) + '%</span></div>';
+      });
       html += '</div>';
-    });
-    html += '</div></section></div></div>';
+    }
+    html += '</section>';
     return html;
   }
 
@@ -1949,7 +1973,7 @@ window.BTG = window.BTG || {};
     var leftSlots = [], rightSlots = [];
     grid.forEach(function(d, i) { if (i % 2 === 0) leftSlots.push(d); else rightSlots.push(d); });
 
-    var html = '<div><h3 class="text-sm font-bold text-white mb-4 px-2">' + esc(title || '🏁 Starting Grid') + '</h3>';
+    var html = '<div><h3 class="rw-section-title">' + esc(title || 'Starting Grid') + '</h3>';
     html += '<div class="sg-track"><div class="sg-track__surface">';
     html += '<div class="sg-col sg-col--left">' + leftSlots.map(gridSlotHtml).join('') + '</div>';
     html += '<div class="sg-col sg-col--right">' + rightSlots.map(gridSlotHtml).join('') + '</div>';
