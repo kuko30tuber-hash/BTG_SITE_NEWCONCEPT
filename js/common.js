@@ -431,3 +431,32 @@ document.addEventListener('keydown', function(e) {
     BTG.resetTeamColors();
   }
 });
+
+/* ── Sharpest track photo ───────────────────────────────────────────────────
+   Each circuit can have up to three photos (tracks/<name>.webp, <name>2.webp,
+   <name>3.webp). Load them and resolve with the one that has the most pixels,
+   so dropping a higher-resolution file in under any of those names upgrades
+   every page automatically. Resolves to {url, w, h} or null. Cached. */
+BTG._trackImgCache = BTG._trackImgCache || {};
+BTG.bestTrackImage = function (base) {
+  if (!base) return Promise.resolve(null);
+  if (BTG._trackImgCache[base]) return BTG._trackImgCache[base];
+  var names = [base, base + '2', base + '3'];
+  var loads = names.map(function (n) {
+    return new Promise(function (resolve) {
+      var im = new Image();
+      var url = 'tracks/' + encodeURIComponent(n) + '.webp';
+      im.onload = function () { resolve({ url: url, w: im.naturalWidth, h: im.naturalHeight }); };
+      im.onerror = function () { resolve(null); };
+      im.src = url;
+    });
+  });
+  BTG._trackImgCache[base] = Promise.all(loads).then(function (list) {
+    var best = null;
+    list.forEach(function (x) { if (x && (!best || x.w * x.h > best.w * best.h)) best = x; });
+    return best;
+  });
+  return BTG._trackImgCache[base];
+};
+/** Width (px) from which a photo is sharp enough to fill a full-width banner. */
+BTG.HD_TRACK_WIDTH = 1400;

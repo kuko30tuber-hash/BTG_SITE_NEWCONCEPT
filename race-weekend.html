@@ -157,16 +157,26 @@ body::before {
 
 .rw-hero {
   position: relative; border-radius: 8px; overflow: hidden; min-height: 340px;
-  background: #1f1f27 center / cover no-repeat; display: flex; align-items: flex-end;
+  background: #15151e; display: flex; align-items: flex-end;
   border: 1px solid rgba(255,255,255,.09);
 }
-.rw-hero::before {
-  content: ""; position: absolute; inset: 0;
+.rw-hero__photo { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; background: center / cover no-repeat; opacity: 0; transition: opacity .35s; }
+.rw-hero--full .rw-hero__photo, .rw-hero--side .rw-hero__photo { opacity: 1; }
+/* HD photo: fills the banner, darkened on the left for the text */
+.rw-hero--full::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(90deg, rgba(11,11,16,.92) 0%, rgba(11,11,16,.65) 45%, rgba(11,11,16,.15) 100%),
               linear-gradient(0deg, rgba(11,11,16,.85) 0%, rgba(11,11,16,0) 55%);
 }
+/* Small photo: shown at (about) its real size on the right, fading into the dark panel */
+.rw-hero--side .rw-hero__photo { width: min(600px, 58%); }
+.rw-hero--side::before {
+  content: ""; position: absolute; top: 0; bottom: 0; right: 0; width: min(600px, 58%); z-index: 1;
+  background: linear-gradient(90deg, #15151e 0%, rgba(21,21,30,.55) 22%, rgba(21,21,30,0) 55%);
+}
+.rw-hero__inner { z-index: 2; }
 .rw-hero--empty { min-height: 180px; }
-.rw-hero__inner { position: relative; padding: 32px 32px 28px; max-width: 760px; }
+.rw-hero__inner { position: relative; z-index: 2; padding: 32px 32px 28px; max-width: 760px; }
 .rw-hero__kicker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font: 700 13px 'Titillium Web', sans-serif; text-transform: uppercase; letter-spacing: .04em; color: #fff; opacity: .9; }
 .rw-tag { background: #e10600; color: #fff; border-radius: 1000px; padding: 3px 10px; font-size: 11px; letter-spacing: .03em; opacity: 1; }
 .rw-hero__name {
@@ -275,6 +285,8 @@ body::before {
 @media (max-width: 900px) {
   .rw-highlights { grid-template-columns: 1fr; }
   .rw-hero { min-height: 260px; }
+  .rw-hero--side .rw-hero__photo, .rw-hero--side::before { width: 100%; }
+  .rw-hero--side::before { background: linear-gradient(0deg, #15151e 15%, rgba(21,21,30,.6) 60%, rgba(21,21,30,.25)); }
   .rw-hero__inner { padding: 22px 20px 20px; }
 }
 @media (max-width: 640px) {
@@ -299,12 +311,12 @@ body::before {
 
 <div class="rw-attrib">UI by <a href="https://www.patreon.com/c/TFGTools" target="_blank" rel="noopener">TFGTools</a></div>
 
-<script src="js/common.js?v=f1-theme-2"></script>
+<script src="js/common.js?v=f1-theme-3"></script>
 <script src="js/driver-numbers.js?v=20261117-per-car-library"></script>
 <script src="js/border-glow.js"></script>
 <script src="teams/f1.js?v=20261117-lineups-photos"></script>
 <script src="js/data-loader.js?v=20261117-profile-team-16"></script><script src="js/db-cache.js?v=20261117-profile-team-16"></script>
 <script src="js/circuits.js"></script>
-<script src="js/race-weekend.js?v=f1-redesign-3"></script>
+<script src="js/race-weekend.js?v=f1-redesign-4"></script>
 </body>
 </html>

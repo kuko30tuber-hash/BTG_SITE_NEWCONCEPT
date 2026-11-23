@@ -109,7 +109,7 @@
 
 <div class="tfg-attrib">UI by <a href="https://www.patreon.com/c/TFGTools" target="_blank" rel="noopener">TFGTools</a></div>
 
-<script src="js/common.js?v=f1-theme-2"></script>
+<script src="js/common.js?v=f1-theme-3"></script>
 <script src="teams/f1.js?v=20261117-lineups-photos"></script>
 <script src="js/db-cache.js?v=20261117-profile-team-16"></script>
 <script src="js/circuits.js"></script>
@@ -293,6 +293,7 @@
         gp: circuit ? BTG.gpNameFor(circuit, r.format) : (str(r.name) || ''),
         place: (str(r.country) || str(r.name) || circuit).replace(/([a-z])([A-Z])/g, '$1 $2'),
         img: trackImg(circuit), flag: flagUrl(circuit),
+        base: (BTG.circuitBySlug(circuit) || {}).img || '',
         winner: winnerByRace[String(r.race_id)] || ''
       };
     });
@@ -300,7 +301,7 @@
     function flagTag(x) {
       return x.flag ? '<img src="' + escAttr(x.flag) + '" alt="" onerror="this.style.display=\'none\'">' : '';
     }
-    function bgStyle(x) { return x.img ? ' style="background-image:url(' + escAttr(x.img) + ')"' : ''; }
+    function bgStyle(x) { return (x.base ? ' data-track="' + escAttr(x.base) + '"' : '') + (x.img ? ' style="background-image:url(' + escAttr(x.img) + ')"' : ''); }
 
     /* ── Previous / Next / Upcoming ── */
     var slots = [];
@@ -353,6 +354,15 @@
         + '</div></a>';
     }).join('') + '</div>';
 
+    // Swap each photo for the sharpest of that track's versions once known.
+    setTimeout(function () {
+      if (!BTG.bestTrackImage) return;
+      root.querySelectorAll('[data-track]').forEach(function (el) {
+        BTG.bestTrackImage(el.getAttribute('data-track')).then(function (best) {
+          if (best) el.style.backgroundImage = 'url(' + best.url + ')';
+        });
+      });
+    }, 0);
     root.innerHTML = feature + '<h2 class="cal-section-title">' + activeSeason + ' Season · ' + races.length + ' Rounds</h2>' + grid;
   }
 

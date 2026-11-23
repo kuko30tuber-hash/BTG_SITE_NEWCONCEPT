@@ -1158,13 +1158,13 @@ window.BTG = window.BTG || {};
           meta.dates += ' ' + d[0];
         }
         var c = BTG.circuitBySlug ? BTG.circuitBySlug(dbr.circuit) : null;
-        if (c && c.img) meta.img = 'tracks/' + encodeURIComponent(c.img) + '.webp';
+        if (c && c.img) meta.img = c.img;
         if (!meta.flag && c && c.flag) meta.flag = c.flag;
       }
     }
     if (!meta.img && BTG.circuitBySlug) {
       var c2 = BTG.circuitBySlug(r.slug) || BTG.circuitBySlug(r.name);
-      if (c2 && c2.img) meta.img = 'tracks/' + encodeURIComponent(c2.img) + '.webp';
+      if (c2 && c2.img) meta.img = c2.img;
     }
     return meta;
   }
@@ -1190,7 +1190,12 @@ window.BTG = window.BTG || {};
     if (!m) {
       return '<section class="rw-hero rw-hero--empty"><div class="rw-hero__inner"><div class="rw-hero__name">' + (state.loading ? 'Loading…' : 'Select a race') + '</div></div></section>';
     }
-    var html = '<section class="rw-hero"' + (m.img ? ' style="background-image:url(' + escAttr(m.img) + ')"' : '') + '>';
+    // The photo is drawn once the sharpest version is known: full-bleed when it is
+    // large enough, otherwise at its real size on the right so it never stretches.
+    var known = m.img && heroImgCache[m.img];
+    var mode = known ? (known.w >= BTG.HD_TRACK_WIDTH ? ' rw-hero--full' : ' rw-hero--side') : '';
+    var html = '<section class="rw-hero' + mode + '" data-track="' + escAttr(m.img || '') + '">';
+    html += '<div class="rw-hero__photo"' + (known ? ' style="background-image:url(' + escAttr(known.url) + ')"' : '') + '></div>';
     html += '<div class="rw-hero__inner">';
     html += '<div class="rw-hero__kicker">Round ' + m.round + (m.total ? ' / ' + m.total : '') + ' &middot; ' + esc(state.activeSeries) + ' ' + esc(state.activeSeason)
       + (m.sprint ? '<span class="rw-tag">Sprint weekend</span>' : '') + '</div>';
@@ -1201,6 +1206,22 @@ window.BTG = window.BTG || {};
     if (m.laps) html += '<span><b>Laps</b>' + m.laps + '</span>';
     html += '</div></div></section>';
     return html;
+  }
+
+  var heroImgCache = {};
+  function applyHeroPhoto() {
+    var hero = appEl && appEl.querySelector('.rw-hero[data-track]');
+    var base = hero && hero.getAttribute('data-track');
+    if (!base || heroImgCache[base] || !BTG.bestTrackImage) return;
+    BTG.bestTrackImage(base).then(function (best) {
+      if (!best) return;
+      heroImgCache[base] = best;
+      var h = appEl.querySelector('.rw-hero[data-track="' + base.replace(/"/g, '') + '"]');
+      if (!h) return;
+      h.classList.add(best.w >= BTG.HD_TRACK_WIDTH ? 'rw-hero--full' : 'rw-hero--side');
+      var ph = h.querySelector('.rw-hero__photo');
+      if (ph) ph.style.backgroundImage = 'url(' + best.url + ')';
+    });
   }
 
   function renderRoundStrip() {
@@ -1269,6 +1290,8 @@ window.BTG = window.BTG || {};
     html += '</div>';
 
     appEl.innerHTML = html;
+
+    applyHeroPhoto();
 
     // Keep the selected round visible in the scrolling strip
     var strip = document.getElementById('rw-rounds');
