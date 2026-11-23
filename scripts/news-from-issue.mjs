@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { downloadImage, groqArticle, plainArticle, hasGroq, saveArticle, SERIES } from './news-lib.mjs';
+import { downloadImage, groqArticle, plainArticle, hasGroq, saveArticle, SERIES, readJson, writeJson } from './news-lib.mjs';
 
 const NEWS_DIR = process.env.NEWS_DIR || path.join(process.cwd(), 'news');
 const IMG_DIR = path.join(NEWS_DIR, 'images');
@@ -38,9 +38,32 @@ export function splitImages(text) {
   return { text: clean, images: [...new Set(urls)] };
 }
 
+/** Re-running an issue replaces its earlier article (and that article's images). */
+async function removeOldVersions(num) {
+  const manifestFile = path.join(NEWS_DIR, 'manifest.json');
+  const manifest = await readJson(manifestFile, { articles: [] });
+  const prefix = 'post-' + num + '-';
+  const old = (manifest.articles || []).filter((s) => s.startsWith(prefix) && !s.startsWith(prefix + 'img'));
+  if (!old.length) return;
+  for (const slug of old) {
+    await fs.rm(path.join(NEWS_DIR, slug + '.json'), { force: true });
+    for (const f of await fs.readdir(IMG_DIR).catch(() => [])) if (f.startsWith(slug + '-')) await fs.rm(path.join(IMG_DIR, f), { force: true });
+  }
+  manifest.articles = manifest.articles.filter((s) => !old.includes(s));
+  await writeJson(manifestFile, manifest);
+  log('replaced earlier version(s):', old.join(', '));
+}
+
 async function main() {
-  const event = JSON.parse(await fs.readFile(process.env.GITHUB_EVENT_PATH, 'utf8'));
-  const issue = event.issue;
+  const event = process.env.GITHUB_EVENT_PATH ? JSON.parse(await fs.readFile(process.env.GITHUB_EVENT_PATH, 'utf8')) : {};
+  let issue = event.issue;
+  if (!issue && process.env.ISSUE_NUMBER) {
+    // Manual re-run: fetch the issue from the API
+    const res = await fetch(`${process.env.GITHUB_API_URL || 'https://api.github.com'}/repos/${process.env.GITHUB_REPOSITORY}/issues/${process.env.ISSUE_NUMBER}`,
+      { headers: { Authorization: 'token ' + process.env.GITHUB_TOKEN, Accept: 'application/vnd.github+json' } });
+    if (!res.ok) throw new Error('Could not load issue #' + process.env.ISSUE_NUMBER + ': ' + res.status);
+    issue = await res.json();
+  }
   if (!issue) throw new Error('No issue in this event');
   const form = parseForm(issue.body);
   // Plain issues (not from the form) still work: the whole body is the post.
@@ -53,22 +76,31 @@ async function main() {
 
   if (!text && !images.length) throw new Error('The issue has no text or images to publish.');
 
+  await fs.mkdir(IMG_DIR, { recursive: true });
+  // Download the images first, so the AI can read them (image-only posts)
+  const tmpBase = 'post-' + issue.number + '-img';
+  const auth = process.env.GITHUB_TOKEN ? { Authorization: 'token ' + process.env.GITHUB_TOKEN } : {};
+  const tmpFiles = [];
+  for (let i = 0; i < images.length && i < 8; i++) {
+    const f = (await downloadImage(images[i], IMG_DIR, `${tmpBase}-${i + 1}`)) || (await downloadImage(images[i], IMG_DIR, `${tmpBase}-${i + 1}`, auth));
+    if (f) tmpFiles.push(f); else log('Could not download image', images[i]);
+  }
+
   let art;
-  if (!text) art = { title: 'From the paddock', kicker: 'Gallery', series: 'General', tags: [], paragraphs: [], caption: '' };
-  else if (hasGroq()) {
-    try { art = await groqArticle(text, images.length > 0); }
-    catch (e) { log('AI failed, publishing the post as written:', e.message); art = plainArticle(text); }
-  } else art = plainArticle(text);
+  if (hasGroq()) {
+    try { art = await groqArticle(text, images.length > 0, tmpFiles.map((f) => path.join(IMG_DIR, f))); }
+    catch (e) { log('AI failed:', e.message); art = null; }
+  }
+  if (!art) art = text ? plainArticle(text) : { title: 'From the paddock', kicker: 'Gallery', series: 'General', tags: [], paragraphs: [], caption: '' };
   if (SERIES.includes(chosen.toUpperCase()) || chosen === 'General') art.series = chosen;
 
-  await fs.mkdir(IMG_DIR, { recursive: true });
   const slug = 'post-' + issue.number + '-' + String(art.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
-  const auth = process.env.GITHUB_TOKEN ? { Authorization: 'token ' + process.env.GITHUB_TOKEN } : {};
+  await removeOldVersions(issue.number);
   const files = [];
-  for (let i = 0; i < images.length && i < 8; i++) {
-    // Public repos serve attachments without auth; retry with the token for private ones.
-    const f = (await downloadImage(images[i], IMG_DIR, `${slug}-${i + 1}`)) || (await downloadImage(images[i], IMG_DIR, `${slug}-${i + 1}`, auth));
-    if (f) files.push(f); else log('Could not download image', images[i]);
+  for (const f of tmpFiles) {
+    const final = f.replace(tmpBase, slug);
+    await fs.rename(path.join(IMG_DIR, f), path.join(IMG_DIR, final));
+    files.push(final);
   }
 
   await saveArticle(NEWS_DIR, slug, art, files, date, { source: 'issue', issue: issue.number });

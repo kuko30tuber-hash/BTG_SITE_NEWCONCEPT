@@ -57,31 +57,86 @@ Return JSON only:
 
 export class RateLimited extends Error {}
 
-export async function groqArticle(text, hasImages) {
+const VISION_MODELS = [process.env.GROQ_VISION_MODEL, 'meta-llama/llama-4-scout-17b-16e-instruct', 'qwen/qwen3.6-27b',
+  'qwen/qwen3.8-27b', 'meta-llama/llama-4-maverick-17b-128e-instruct', 'meta-models/muse-spark-open'].filter(Boolean);
+
+const VISION_RULES = `
+The post comes with image(s). Read them carefully: use text that is written in the images (names, headlines,
+results, dates, team names, logos with names) as facts. Never identify a person from their face or appearance —
+only name people whose names are written in the image or the post. If the images contain no readable facts,
+write a short neutral piece describing what is shown, without guessing who it is.`;
+
+function parseArticle(raw) {
+  const json = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
+  if (!json.title || !Array.isArray(json.paragraphs) || !json.paragraphs.length) throw new Error('Groq returned an incomplete article');
+  return json;
+}
+
+async function callGroq(model, messages, jsonMode) {
+  const res = await fetch(GROQ_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + GROQ_KEY },
+    body: JSON.stringify({ model, temperature: 0.4, max_tokens: 1200, ...(jsonMode ? { response_format: { type: 'json_object' } } : {}), messages })
+  });
+  if (res.status === 429) throw new RateLimited('Groq rate limit reached');
+  if (!res.ok) { const e = new Error('Groq ' + model + ' ' + res.status + ': ' + (await res.text()).slice(0, 200)); e.status = res.status; throw e; }
+  const data = await res.json();
+  return parseArticle(data.choices?.[0]?.message?.content || '');
+}
+
+/** Local image files → data URLs (max 3, skip anything over ~3.5 MB). */
+async function imageParts(files) {
+  const parts = [];
+  for (const f of files.slice(0, 3)) {
+    try {
+      const buf = await fs.readFile(f);
+      if (buf.length > 3.5 * 1024 * 1024) continue;
+      const ext = path.extname(f).slice(1).toLowerCase();
+      const mime = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+      parts.push({ type: 'image_url', image_url: { url: `data:${mime};base64,${buf.toString('base64')}` } });
+    } catch {}
+  }
+  return parts;
+}
+
+/**
+ * Write an article from a post. `imageFiles` are local paths of the post's images:
+ * when the post has little or no text, a vision model reads the images too.
+ */
+export async function groqArticle(text, hasImages, imageFiles = []) {
+  text = String(text || '');
   let lastErr;
+  // 1. Vision: image-only or very short posts
+  if (imageFiles.length && text.length < 280) {
+    const imgs = await imageParts(imageFiles);
+    if (imgs.length) {
+      const userContent = [{ type: 'text', text: (text ? `Post text:\n"""\n${text}\n"""\n` : 'The post has no text, only the image(s) below.\n') + 'Write the article as JSON.' }, ...imgs];
+      for (const model of [...new Set(VISION_MODELS)]) {
+        for (const jsonMode of [true, false]) {
+          try { return await callGroq(model, [{ role: 'system', content: SYSTEM + VISION_RULES }, { role: 'user', content: userContent }], jsonMode); }
+          catch (e) {
+            if (e instanceof RateLimited) throw e;
+            lastErr = e;
+            if (e.status === 404 || /model/i.test(e.message) && e.status === 400 && /not.*(found|exist|support)|decommission/i.test(e.message)) break; // try next model
+          }
+        }
+      }
+    }
+    if (!text) throw lastErr || new Error('No vision model could read the image');
+  }
+  // 2. Text models
   for (const model of [...new Set(MODELS)]) {
-    const res = await fetch(GROQ_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + GROQ_KEY },
-      body: JSON.stringify({
-        model,
-        temperature: 0.4,
-        max_tokens: 1200,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: SYSTEM },
-          { role: 'user', content: `Post${hasImages ? ' (has an image attached)' : ''}:\n"""\n${text.slice(0, 6000)}\n"""` }
-        ]
-      })
-    });
-    if (res.status === 429) throw new RateLimited('Groq rate limit reached');
-    if (res.status === 404 || res.status === 400) { lastErr = new Error('Groq model ' + model + ': ' + (await res.text()).slice(0, 200)); continue; }
-    if (!res.ok) throw new Error('Groq ' + res.status + ': ' + (await res.text()).slice(0, 200));
-    const data = await res.json();
-    const raw = data.choices?.[0]?.message?.content || '';
-    const json = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
-    if (!json.title || !Array.isArray(json.paragraphs) || !json.paragraphs.length) throw new Error('Groq returned an incomplete article');
-    return json;
+    try {
+      return await callGroq(model, [
+        { role: 'system', content: SYSTEM },
+        { role: 'user', content: `Post${hasImages ? ' (has an image attached)' : ''}:\n"""\n${text.slice(0, 6000)}\n"""` }
+      ], true);
+    } catch (e) {
+      if (e instanceof RateLimited) throw e;
+      lastErr = e;
+      if (e.status === 404 || e.status === 400) continue;
+      throw e;
+    }
   }
   throw lastErr || new Error('No Groq model worked');
 }
