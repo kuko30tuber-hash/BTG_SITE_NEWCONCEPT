@@ -19,7 +19,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { sleep, readJson, writeJson, downloadImage as dl, groqArticle, plainArticle, RateLimited, hasGroq, saveArticle } from './news-lib.mjs';
+import { sleep, readJson, writeJson, downloadImage as dl, writeArticle, plainArticle, RateLimited, hasGroq, saveArticle } from './news-lib.mjs';
 
 const TOKEN = process.env.DISCORD_BOT_TOKEN || '';
 const CHANNEL = (process.env.DISCORD_CHANNEL_ID || '').trim();
@@ -123,7 +123,7 @@ async function main() {
       art = { title: 'From the paddock', kicker: 'Gallery', series: 'General', tags: [], paragraphs: [], caption: '' };
     } else if (hasGroq()) {
       try {
-        art = await groqArticle(text, images.length > 0);
+        art = await writeArticle(text, images.length > 0);
       } catch (e) {
         if (e instanceof RateLimited) { log('Groq limit reached — the rest will be done next run.'); break; }
         log('AI failed for message ' + m.id + ', using the post as-is:', e.message);

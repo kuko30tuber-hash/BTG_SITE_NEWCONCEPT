@@ -7,7 +7,7 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { downloadImage, groqArticle, plainArticle, hasGroq, saveArticle, SERIES, readJson, writeJson } from './news-lib.mjs';
+import { downloadImage, writeArticle, plainArticle, hasGroq, saveArticle, SERIES, readJson, writeJson } from './news-lib.mjs';
 
 const NEWS_DIR = process.env.NEWS_DIR || path.join(process.cwd(), 'news');
 const IMG_DIR = path.join(NEWS_DIR, 'images');
@@ -88,7 +88,7 @@ async function main() {
 
   let art;
   if (hasGroq()) {
-    try { art = await groqArticle(text, images.length > 0, tmpFiles.map((f) => path.join(IMG_DIR, f))); }
+    try { art = await writeArticle(text, images.length > 0, tmpFiles.map((f) => path.join(IMG_DIR, f))); }
     catch (e) { log('AI failed:', e.message); art = null; }
   }
   if (!art) art = text ? plainArticle(text) : { title: 'From the paddock', kicker: 'Gallery', series: 'General', tags: [], paragraphs: [], caption: '' };

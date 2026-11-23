@@ -6,7 +6,7 @@
 <title>BeTheGrid — News</title>
 <link rel="icon" type="image/x-icon" href="logos/BTG.ico">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="css/f1-theme.css?v=6">
+<link rel="stylesheet" href="css/f1-theme.css?v=7">
 </head>
 <body data-page="news">
 
@@ -159,13 +159,21 @@
     return tpl.innerHTML;
   }
 
-  function extractSnippet(html) {
+  function extractSnippet(html, max) {
     if (!html) return '';
+    max = max || 160;
     var tmp = document.createElement('div');
     tmp.innerHTML = sanitizeHtml(html);
     var text = (tmp.textContent || '').trim();
-    return text.length > 160 ? text.substring(0, 157) + '…' : text;
+    return text.length > max ? text.substring(0, max - 3).replace(/\s+\S*$/, '') + '…' : text;
   }
+  /* Tall (portrait) images sit beside the text instead of on top of it. */
+  window.BTGNewsImg = function (img) {
+    if (img.naturalHeight > img.naturalWidth * 1.05) {
+      var card = img.closest('.nf-feature, .nf-teaser');
+      if (card) card.classList.add('is-portrait');
+    }
+  };
 
   /* Top bar splits by SERIES only (series come from the Data folder). */
   function buildFilters() {
@@ -278,12 +286,14 @@
   function featureCard(a, idx) {
     var img = newsImage(a.image);
     return '<div class="nf-feature" data-idx="' + idx + '" role="button" tabindex="0">'
-      + (img ? '<img src="' + attr(img) + '" alt="' + attr(a.title || '') + '" loading="lazy" onerror="this.classList.add(\'img-missing\')">' : '')
+      + (img ? '<img src="' + attr(img) + '" alt="' + attr(a.title || '') + '" loading="lazy" onload="BTGNewsImg(this)" onerror="this.classList.add(\'img-missing\')">' : '')
       + '<div class="nf-body">'
       +   (a.kicker ? '<div class="nf-kicker"><span class="nk-bar"></span>' + esc(a.kicker) + '</div>' : '')
       +   '<h2>' + esc(a.title) + '</h2>'
       +   (a.meta ? '<div class="nf-meta">' + esc(a.meta) + '</div>' : '')
       +   '<p class="nf-snippet">' + esc(extractSnippet(a.body)) + '</p>'
+      +   '<p class="nf-snippet nf-snippet--long">' + esc(extractSnippet(a.body, 520)) + '</p>'
+      +   '<span class="nf-readmore">Read article &rarr;</span>'
       + '</div></div>';
   }
 
@@ -304,7 +314,7 @@
   function teaserCard(a, idx) {
     var img = newsImage(a.image);
     return '<div class="nf-teaser" data-idx="' + idx + '" role="button" tabindex="0">'
-      + (img ? '<img src="' + attr(img) + '" alt="' + attr(a.title || '') + '" loading="lazy" onerror="this.classList.add(\'img-missing\')">' : '')
+      + (img ? '<img src="' + attr(img) + '" alt="' + attr(a.title || '') + '" loading="lazy" onload="BTGNewsImg(this)" onerror="this.classList.add(\'img-missing\')">' : '')
       + '<div class="nf-tbody">'
       +   '<div class="nf-tags">' + (a.tags || []).slice(0, 3).map(function(t){ return '<span class="nf-pill">' + esc(t) + '</span>'; }).join('') + '</div>'
       +   '<h3>' + esc(a.title) + '</h3>'

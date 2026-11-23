@@ -2,6 +2,7 @@
    discord-news.mjs and news-from-issue.mjs). */
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { leagueFacts } from './league-facts.mjs';
 
 const GROQ_API = process.env.GROQ_API || 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_KEY = process.env.GROQ_API_KEY || '';
@@ -139,6 +140,55 @@ export async function groqArticle(text, hasImages, imageFiles = []) {
     }
   }
   throw lastErr || new Error('No Groq model worked');
+}
+
+const WRITER = `You are the news editor of BeTheGrid, a sim-racing league website with F1, F2 and XGT championships.
+Write a news article of 3 to 4 paragraphs (each 2-4 sentences), in clear sports-news style, like formula1.com.
+- Paragraph 1: the news itself, from THE NEWS section.
+- Following paragraphs: background and context using ONLY facts listed in LEAGUE DATA (career, results, contracts,
+  standings, team line-up). Weave them in naturally; explain why the news matters using those facts.
+- Never invent anything: no quotes, no results, no numbers, no dates, no opinions attributed to people, and no facts
+  that are not in THE NEWS or LEAGUE DATA. Do not speculate about the future beyond what the news says.
+- If LEAGUE DATA is thin, write 3 shorter paragraphs rather than padding with invented detail.
+- LEAGUE DATA describes this sim-racing league, not real-world motorsport; do not add real-world knowledge.
+- No emojis, hashtags or markdown. Do not mention Discord, "the post", "the graphic" or "league data".
+Return JSON only:
+{"title": "headline, max 90 characters", "paragraphs": ["...", "...", "..."]}`;
+
+async function textModels(messages) {
+  let lastErr;
+  for (const model of [...new Set(MODELS)]) {
+    try { return await callGroq(model, messages, true); }
+    catch (e) {
+      if (e instanceof RateLimited) throw e;
+      lastErr = e;
+      if (e.status === 404 || e.status === 400) continue;
+      throw e;
+    }
+  }
+  throw lastErr || new Error('No Groq model worked');
+}
+
+/**
+ * Full article: step 1 reads the post (and its images), step 2 writes a 3-4 paragraph
+ * article that adds background from the league's own data. If step 2 fails, step 1's
+ * article is used as-is.
+ */
+export async function writeArticle(text, hasImages, imageFiles = []) {
+  const first = await groqArticle(text, hasImages, imageFiles);
+  const news = [text ? 'Post text: ' + text : '', 'Summary of the announcement: ' + first.title + '. ' + (first.paragraphs || []).join(' ')].filter(Boolean).join('\n');
+  const facts = await leagueFacts([text, first.title, ...(first.paragraphs || []), ...(first.tags || [])].join('\n'));
+  try {
+    const second = await textModels([
+      { role: 'system', content: WRITER },
+      { role: 'user', content: `THE NEWS:\n${news.slice(0, 5000)}\n\nLEAGUE DATA:\n${facts || '(none available)'}` }
+    ]);
+    const paras = (second.paragraphs || []).map((p) => String(p).trim()).filter(Boolean);
+    if (paras.length >= 2) return { ...first, title: second.title || first.title, paragraphs: paras.slice(0, 5) };
+  } catch (e) {
+    if (e instanceof RateLimited) throw e;
+  }
+  return first;
 }
 
 /** No-AI fallback: first line = headline, rest = body, series by keyword. */
