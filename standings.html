@@ -281,6 +281,27 @@ body { background: var(--bg-base); color: var(--text-primary); font-variant-nume
   .sl-table td, .sl-table th { padding-left: 8px; padding-right: 8px; }
   .sl-table .c-pos { width: 40px; padding-left: 14px; }
 }
+
+/* Race by Race alignment: fixed slots in the driver column, fixed 3-line round headers */
+.st-matrix td.st-matrix__driver, .st-matrix th.st-matrix__driver { text-align: left; padding: 4px 12px 4px 0; }
+.st-matrix td.st-matrix__driver { box-shadow: inset 4px 0 0 var(--tc, transparent); }
+.st-matrix__who { display: grid; grid-template-columns: 28px 26px 20px auto; align-items: center; column-gap: 8px; padding-left: 12px; }
+.st-matrix th .st-matrix__who { grid-template-columns: 28px auto; }
+.st-matrix .st-matrix__rank { display: inline-grid; place-items: center; width: 28px; height: 24px; border-radius: 5px; border: 0; background: #303037; color: #fff; font: 700 12px 'Formula1', sans-serif; }
+.st-matrix .st-matrix__rank--lead { background: #e10600; }
+.st-matrix .st-matrix__rank--head { background: none; color: #c9c9d0; font-family: 'Titillium Web', sans-serif; }
+.st-matrix__face { width: 26px; height: 26px; border-radius: 50%; overflow: hidden; background: #303037; display: block; }
+.st-matrix__face img { width: 100% !important; height: 100% !important; object-fit: cover; object-position: top; }
+.st-matrix__nat { display: flex; align-items: center; justify-content: center; }
+.st-matrix__nat img { width: 18px; height: 12px; object-fit: cover; border-radius: 2px; }
+.st-matrix__name { font: 700 13px 'Titillium Web', sans-serif; color: #fff; white-space: nowrap; }
+.st-matrix th.st-matrix__round { padding: 8px 2px; vertical-align: top; min-width: 40px; }
+.st-matrix__head { display: grid; grid-template-rows: 14px 14px 10px; justify-items: center; align-items: center; row-gap: 3px; }
+.st-matrix__flagbox { display: flex; align-items: center; justify-content: center; height: 14px; }
+.st-matrix__flagbox .st-matrix__flag { width: 20px; height: 14px; object-fit: cover; border-radius: 2px; display: block; }
+.st-matrix__code { font: 700 11px 'Titillium Web', sans-serif; letter-spacing: .03em; color: #fff; line-height: 14px; }
+.st-matrix__spr { font: 700 8px 'Titillium Web', sans-serif; color: #ff2a1f; letter-spacing: .05em; line-height: 10px; }
+.st-matrix thead th.st-matrix__pts { vertical-align: middle; }
 </style>
 <link rel="stylesheet" href="css/f1-theme.css?v=5">
 </head>
@@ -631,10 +652,20 @@ body { background: var(--bg-base); color: var(--text-primary); font-variant-nume
     var c = BTG.circuitBySlug ? BTG.circuitBySlug(circuit) : null;
     return c && c.flag ? 'Flags/' + c.flag + '.svg' : '';
   }
+  // F1-style 3-letter round codes (unique per circuit, so two Italian or US rounds never clash)
+  var ROUND_CODES = {
+    Bahrain: 'BHR', Jeddah: 'KSA', AlbertPark: 'AUS', Suzuka: 'JPN', Shanghai: 'CHN', Miami: 'MIA', Imola: 'EMI',
+    Monaco: 'MON', Montreal: 'CAN', Barcelona: 'ESP', RedBullRing: 'AUT', Silverstone: 'GBR', Hungaroring: 'HUN',
+    SpaFrancorchamps: 'BEL', Zandvoort: 'NED', Monza: 'ITA', Baku: 'AZE', MarinaBay: 'SIN', CircuitOfTheAmericas: 'USA',
+    HermanosRodriguez: 'MEX', Interlagos: 'BRA', Vegas: 'LVG', Qatar: 'QAT', YasMarina: 'ABU', Kyalami: 'RSA',
+    DubaiAutodrome: 'DUB', TermasRioHondo: 'RHO', Bathurst: 'BAT', LeMans: 'LMS', Brno: 'BRN', Nurburgring: 'NUR',
+    BuenosAires: 'BUE', Sonoma: 'SON', Daytona: 'DAY'
+  };
   function abbrFor(circuit, name) {
     var c = BTG.circuitBySlug ? BTG.circuitBySlug(circuit) : null;
-    if (c && c.alt) return c.alt.split(' ')[0].toUpperCase();
-    return String(circuit || name || '').slice(0, 3).toUpperCase();
+    var key = c && c.circuit ? c.circuit : circuit;
+    if (ROUND_CODES[key]) return ROUND_CODES[key];
+    return String(key || name || '').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase();
   }
 
   function renderRaceByRace() {
@@ -727,13 +758,15 @@ body { background: var(--bg-base); color: var(--text-primary); font-variant-nume
     };
 
     var html = '<table class="st-matrix"><thead><tr>'
-      + '<th class="st-matrix__driver">#&nbsp;&nbsp;Driver</th>';
+      + '<th class="st-matrix__driver"><span class="st-matrix__who"><span class="st-matrix__rank st-matrix__rank--head">#</span><span>Driver</span></span></th>';
     allRaces.forEach(function (r) {
       var fl = flagForCircuit(r.circuit);
-      html += '<th>' + (fl ? '<img class="st-matrix__flag" src="' + fl + '" onerror="this.style.display=\'none\'">' : '<span class="st-matrix__spacer"></span>')
-        + '<br><span>' + esc(abbrFor(r.circuit, r.name)) + '</span>'
-        + (Number(r.weekend_type) === 1 ? '<br><span style="color:var(--accent);font-size:7px;">SPR</span>' : '')
-        + '</th>';
+      // Fixed three-line stack: flag, code, SPR slot (kept empty on normal rounds) so every column lines up.
+      html += '<th class="st-matrix__round" title="' + esc(r.name || r.circuit || '') + '"><span class="st-matrix__head">'
+        + '<span class="st-matrix__flagbox">' + (fl ? '<img class="st-matrix__flag" src="' + fl + '" alt="" onerror="this.style.visibility=\'hidden\'">' : '') + '</span>'
+        + '<span class="st-matrix__code">' + esc(abbrFor(r.circuit, r.name)) + '</span>'
+        + '<span class="st-matrix__spr">' + (Number(r.weekend_type) === 1 ? 'SPR' : '') + '</span>'
+        + '</span></th>';
     });
     html += '<th class="st-matrix__pts">Pts</th></tr></thead><tbody>';
 
@@ -742,11 +775,12 @@ body { background: var(--bg-base); color: var(--text-primary); font-variant-nume
       .sort(function (a, b) { return a.pos - b.pos || b.total - a.total; });
 
     driverList.forEach(function (d, di) {
-      html += '<tr><td class="st-matrix__driver"><span style="display:inline-flex;align-items:center;gap:6px;padding:0 4px;">'
-        + '<span class="st-matrix__rank st-matrix__rank--' + posMod(di + 1) + '">' + (di + 1) + '</span>'
-        + (BTG.driverPhotoImg ? BTG.driverPhotoImg(d.name, 22, '', activeSeason) : '')
-        + (BTG.flagImg ? BTG.flagImg(d.flag, 16, 11) : '')
-        + '<span style="color:' + teamColorCss(d.team) + ';font-weight:700;font-size:11px;white-space:nowrap;">' + esc(d.name) + '</span>'
+      // Fixed slots: position | photo | flag | name — every row lines up.
+      html += '<tr><td class="st-matrix__driver" style="--tc:' + teamColorCss(d.team) + '"><span class="st-matrix__who">'
+        + '<span class="st-matrix__rank' + (di === 0 ? ' st-matrix__rank--lead' : '') + '">' + (di + 1) + '</span>'
+        + '<span class="st-matrix__face">' + (BTG.driverPhotoImg ? BTG.driverPhotoImg(d.name, 24, '', activeSeason) : '') + '</span>'
+        + '<span class="st-matrix__nat">' + (BTG.flagImg ? BTG.flagImg(d.flag, 18, 12) : '') + '</span>'
+        + '<span class="st-matrix__name">' + esc(d.name) + '</span>'
         + '</span></td>';
       allRaces.forEach(function (r, ci) {
         var cell = d.cells[ci];
