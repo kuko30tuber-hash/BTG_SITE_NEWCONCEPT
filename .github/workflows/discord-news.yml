@@ -1,0 +1,65 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  Discord → News (hourly)
+#  Reads new posts from the Discord channel, has Groq write each one up as a
+#  news article, saves it (and its images) into news/, then republishes the
+#  site. Needs: secrets DISCORD_BOT_TOKEN + GROQ_API_KEY, variable DISCORD_CHANNEL_ID.
+# ═══════════════════════════════════════════════════════════════════════════
+name: Discord News
+
+on:
+  schedule:
+    - cron: '17 * * * *'   # every hour at :17
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: discord-news
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Turn new Discord posts into articles
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          DISCORD_CHANNEL_ID: ${{ vars.DISCORD_CHANNEL_ID }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+        run: node scripts/discord-news.mjs
+
+      - name: Save new articles
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add news/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Only the state file changed (e.g. skipped chat messages): save it, no redeploy needed
+          if git diff --cached --name-only | grep -qv '^news/discord-state.json$'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+          git commit -m "news: import from Discord"
+          git pull --rebase --autostash
+          git push
+
+      # Pushes made by this workflow don't trigger other workflows, so start the deploy directly.
+      - name: Republish the site
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main
