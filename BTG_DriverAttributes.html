@@ -572,7 +572,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
 <link rel="stylesheet" href="css/radio-card.css">
 <link rel="stylesheet" href="css/dashboard-radio.css?v=container-preview-2">
 <link rel="stylesheet" href="css/f1-theme.css?v=8">
-<link rel="stylesheet" href="css/dashboard-f1.css?v=6">
+<link rel="stylesheet" href="css/dashboard-f1.css?v=7">
 </head>
 <body data-page="dashboard">
 
@@ -1089,22 +1089,30 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
         <h2 id="chat-heading">Team Chat</h2>
       </div>
     </div>
-    <div class="field hidden" id="chat-room-picker" style="max-width:340px; margin-bottom:14px;">
-      <label for="chat-room-select">Chat</label>
-      <select id="chat-room-select"></select>
+    <div class="cx-shell" id="chat-shell">
+    <div class="cx-top">
+      <span class="cx-logo" id="chat-team-logo"></span>
+      <div class="cx-id"><div class="cx-kicker">Team radio &middot; Pit wall</div><div class="cx-title" id="chat-title">Team</div></div>
+      <span class="cx-live"><i></i>Live</span>
+      <div class="field hidden" id="chat-room-picker">
+        <label for="chat-room-select">Channel</label>
+        <select id="chat-room-select"></select>
+      </div>
     </div>
     <div class="chat-app">
       <div class="chat-side">
-        <div class="chat-side-head">Online now</div>
+        <div class="chat-side-head">Crew online</div>
         <div id="chat-members"></div>
       </div>
       <div class="chat-main">
         <div id="chat-messages"></div>
         <div class="chat-input-row">
-          <input type="text" id="chat-input" placeholder="Message your team…" autocomplete="off">
+          <span class="cx-mic" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+          <input type="text" id="chat-input" placeholder="Radio your team…" autocomplete="off">
           <button class="action action-lead action-compact" id="chat-send-btn"><span>Send</span></button>
         </div>
       </div>
+    </div>
     </div>
   </section>
 
@@ -1316,8 +1324,8 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
     <div class="section-head">
       <div class="section-head-mark"></div>
       <div class="section-head-body">
-        <span class="section-head-num">03 — Driver</span>
-        <h2>Ratings</h2>
+        <span class="section-head-num">03 — Development</span>
+        <h2>Driver development</h2>
       </div>
     </div>
     <div class="field hidden" id="driver-select-wrap" style="max-width:420px; margin-bottom:16px;">
@@ -1337,10 +1345,15 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
       <span class="driver-meta-tag affil-tag hidden" id="driver-affil-tag">Affiliation: <span id="driver-affil-name"></span></span>
     </div>
 
-    <div class="ov-stats" style="margin-top:16px;">
-      <div class="ov-stat-card"><div class="v" id="ro-ovr">—</div><div class="k">Current OVR</div></div>
-      <div class="ov-stat-card"><div class="v" style="color:var(--moss)" id="ro-live">—</div><div class="k">Live OVR</div></div>
-      <div class="ov-stat-card"><div class="v" style="color:var(--brass)" id="ro-target">—</div><div class="k">Target OVR</div></div>
+    <div id="attr-banner"></div>
+    <div class="ovr-meter">
+      <div class="ovr-meter__nums">
+        <div class="ovr-num"><div class="v" id="ro-ovr">—</div><div class="k">Current OVR</div></div>
+        <div class="ovr-num ovr-num--live"><div class="v" id="ro-live">—</div><div class="k">Live OVR</div></div>
+        <div class="ovr-num ovr-num--target"><div class="v" id="ro-target">—</div><div class="k">Target OVR</div></div>
+      </div>
+      <div class="ovr-meter__track"><div class="ovr-meter__fill" id="ovr-meter-fill"></div></div>
+      <div class="ovr-meter__note" id="ovr-meter-note">Use your development points to reach your target rating.</div>
     </div>
   </section>
 
@@ -1350,7 +1363,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
       <div class="section-head-mark"></div>
       <div class="section-head-body">
         <span class="section-head-num">04 — Attributes</span>
-        <h2>Allocate upgrade points</h2>
+        <h2>Skill upgrades</h2>
       </div>
     </div>
     <p class="muted" style="margin-bottom:16px;">
@@ -1415,7 +1428,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
       <div class="section-head-mark"></div>
       <div class="section-head-body">
         <span class="section-head-num">05 — Confirm</span>
-        <h2>Write to sheet</h2>
+        <h2>Submit upgrades</h2>
       </div>
     </div>
     <div class="footer-row">
@@ -1530,17 +1543,21 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
   </section>
 
   <!-- 07 · ACCOUNT SETTINGS -->
-  <section id="radio-section" class="hidden"><div class="section-head"><div class="section-head-mark"></div><div class="section-head-body"><h2>Game-connected radio</h2></div></div><div id="dashboard-radio"></div></section>
+  <section id="radio-section" class="hidden"><div class="section-head"><div class="section-head-mark"></div><div class="section-head-body"><span class="section-head-num">06 — Radio creator</span><h2>Team radio</h2></div></div><div id="dashboard-radio"></div></section>
 
   <section id="account-section" class="hidden">
     <div class="section-head">
       <div class="section-head-mark"></div>
       <div class="section-head-body">
         <span class="section-head-num">07 — Account</span>
-        <h2>Change username &amp; password</h2>
+        <h2>Account</h2>
       </div>
     </div>
-    <div class="tool-card">
+    <div class="acct-grid">
+    <div class="acct-licence" id="acct-licence"></div>
+    <div class="tool-card acct-form">
+      <h3>Change login</h3>
+      <p class="muted" style="margin:0 0 14px;">Update the username or password you use to sign in. Leave a field empty to keep it.</p>
       <div class="field-row">
         <div class="field">
           <label for="acct-username">New username</label>
@@ -1553,6 +1570,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
         <button class="action action-quiet action-compact" id="acct-save-btn"><span>Update Login</span></button>
       </div>
       <div class="result-line" id="acct-result"></div>
+    </div>
     </div>
   </section>
 
@@ -2499,6 +2517,7 @@ function showDashTab(tabId) {
   if (tab) tab.sections.forEach(function (id) { const el = document.getElementById(id); if (el) el.classList.remove('hidden'); });
   document.querySelectorAll('#dash-nav button').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tabId); });
   if (tabId === 'radio' && window.DashboardRadio) DashboardRadio.mount(document.getElementById('dashboard-radio'));
+  if (tabId === 'account') renderAccountLicence();
   if (tabId === 'partorders') renderPartOrders();
   if (tabId === 'partsallocation') renderPartsAllocation();
   if (tabId === 'season') { loadSeasonClock(); loadSeasonClockUI(); }
@@ -2629,6 +2648,35 @@ function renderDriverOverview() {
     + '<div class="ov-stat-card"><div class="v">' + BTG.esc(lastRace) + '</div><div class="k">Last race</div></div>'
     + '</div>';
   setMasthead(d.driver, (team ? team + ' · ' : '') + 'Driver');
+}
+
+/* Account tab: league licence card for whoever is logged in. */
+function renderAccountLicence() {
+  var el = document.getElementById('acct-licence');
+  if (!el || !CURRENT_USER) return;
+  var role = CURRENT_USER.role;
+  var name = CURRENT_USER.username, teamKey = '', roleLbl = 'Member', series = '';
+  if (role === 'driver' && SELECTED) { name = SELECTED.driver; teamKey = SELECTED.team || ''; roleLbl = 'Race driver'; series = SELECTED.series || ''; }
+  else if (role === 'tp') { name = (DASH && DASH.tp && DASH.tp.name) || CURRENT_USER.username; teamKey = selectedTpTeam ? (selectedTpTeam() || '') : ''; roleLbl = 'Team Principal'; }
+  else if (role === 'admin') roleLbl = 'League administrator';
+  else if (role === 'seriesrunner') roleLbl = 'Series runner';
+  var team = teamKey ? prettyTeam(teamKey) : '';
+  var trow = teamRowFor(teamKey);
+  var photo = (role === 'driver' && BTG.driverPhotoImg) ? BTG.driverPhotoImg(name, 120, '', CURRENT_YEAR) : '';
+  el.style.setProperty('--ct-team', teamColorFor(teamKey));
+  el.innerHTML = '<div class="lic">'
+    + '<div class="lic__top"><img src="logos/BTG.png" alt="BTG"><span>League licence</span><em>' + BTG.esc(CURRENT_YEAR || '') + '</em></div>'
+    + '<div class="lic__body">'
+    +   '<div class="lic__pic">' + (photo || mailAvatar(name, 'lic__ini')) + '</div>'
+    +   '<dl>'
+    +     '<div><dt>Holder</dt><dd class="lic__name">' + BTG.esc(name) + '</dd></div>'
+    +     '<div><dt>Role</dt><dd>' + BTG.esc(roleLbl) + '</dd></div>'
+    +     (team ? '<div><dt>Team</dt><dd class="lic__team">' + (trow && BTG.teamLogoImg ? BTG.teamLogoImg(trow.team_key, trow.series || 'F1', 18) : '') + BTG.esc(team) + '</dd></div>' : '')
+    +     '<div><dt>Username</dt><dd>' + BTG.esc(CURRENT_USER.username) + '</dd></div>'
+    +   '</dl>'
+    + '</div>'
+    + '<div class="lic__stripe"></div>'
+    + '</div>';
 }
 
 /* Masthead: who is logged in instead of "Dashboard | Dashboard". */
@@ -2820,19 +2868,40 @@ function renderContracts() {
   else if (role === 'driver') contracts = contracts.filter(function (c) { return c.driver === (SELECTED && SELECTED.driver); });
 
   const sorted = contracts.slice().sort(function (a, b) { return (Number(a.seat) || 0) - (Number(b.seat) || 0); });
+  const nowYear = Number(CURRENT_YEAR) || new Date().getFullYear();
   const rows = sorted.map(function (c) {
     var actions = '';
     if (role === 'tp' || role === 'driver') {
-      actions = '<td>' + (role === 'tp' ? '<button class="action action-quiet action-compact" onclick="openContractModify(' + Number(c.row) + ')"><span>Modify</span></button>' : '')
-        + '<button class="action action-quiet action-compact" onclick="openContractExit(' + Number(c.row) + ')"><span>End contract</span></button></td>';
+      actions = '<div class="ct-card__actions">' + (role === 'tp' ? '<button class="action action-quiet action-compact" onclick="openContractModify(' + Number(c.row) + ')"><span>Modify</span></button>' : '')
+        + '<button class="action action-quiet action-compact" onclick="openContractExit(' + Number(c.row) + ')"><span>End contract</span></button></div>';
     }
-    return '<tr><td class="strong">' + BTG.esc(c.driver) + '</td><td>' + BTG.esc(prettyTeam(c.team)) + '</td>'
-      + '<td>' + fmtMoney(c.salary) + '</td><td>' + BTG.esc(c.from || '—') + '–' + BTG.esc(c.till || '—') + '</td>'
-      + '<td>' + BTG.esc(c.seat || '—') + '</td><td><span class="tag-pill">' + BTG.esc(seatCategoryLabel_(c.seat, c.team)) + '</span></td>'
-      + '<td>' + (c.promise ? BTG.esc(c.promise.series + (c.promise.by ? ' by ' + c.promise.by : '')) : '—') + '</td>'
-      + '<td>' + (c.bonus > 0 ? fmtMoney(c.bonus) : '—') + '</td>'
-      + '<td>' + Number(c.buyoutMultiplier == null ? 2 : c.buyoutMultiplier).toFixed(1) + '&times;</td>'
-      + actions + '</tr>';
+    var trow = teamRowFor(c.team);
+    var col = teamColorFor(c.team);
+    var from = Number(c.from), till = Number(c.till);
+    var span = (from && till && till >= from) ? (till - from + 1) : 0;
+    var done = span ? Math.max(0, Math.min(span, nowYear - from + 1)) : 0;
+    var years = '';
+    if (span) { for (var y = from; y <= till; y++) years += '<span class="ct-yr' + (y < nowYear ? ' is-past' : (y === nowYear ? ' is-now' : '')) + '">' + String(y) + '</span>'; }
+    var left = span ? Math.max(0, till - nowYear) : null;
+    var cat = seatCategoryLabel_(c.seat, c.team);
+    return '<article class="ct-card" style="--ct-team:' + col + '">'
+      + '<header class="ct-card__head">'
+      +   '<span class="ct-card__logo">' + (trow && BTG.teamLogoImg ? BTG.teamLogoImg(trow.team_key, trow.series || 'F1', 30) : '') + '</span>'
+      +   '<span class="ct-card__team"><small>Driver agreement</small><b>' + BTG.esc(prettyTeam(c.team)) + '</b></span>'
+      +   '<span class="ct-card__seat">' + BTG.esc(cat) + (c.seat ? '<i>Seat ' + BTG.esc(c.seat) + '</i>' : '') + '</span>'
+      + '</header>'
+      + '<div class="ct-card__driver">' + (BTG.driverPhotoImg ? '<span class="ct-card__photo">' + BTG.driverPhotoImg(c.driver, 64, '', CURRENT_YEAR) + '</span>' : '')
+      +   '<span><small>Driver</small><b>' + BTG.esc(c.driver) + '</b></span>'
+      +   '<span class="ct-card__salary"><small>Annual salary</small><b>' + fmtMoney(c.salary) + '</b></span></div>'
+      + (span ? '<div class="ct-card__term"><div class="ct-card__termhead"><small>Term ' + BTG.esc(c.from) + '–' + BTG.esc(c.till) + '</small><small>' + (left === 0 ? 'Final season' : (left > 0 ? left + ' season' + (left === 1 ? '' : 's') + ' remaining' : '')) + '</small></div>'
+          + '<div class="ct-years" style="--n:' + span + '">' + years + '</div></div>' : '<div class="ct-card__term"><small>Term ' + BTG.esc(c.from || '—') + '–' + BTG.esc(c.till || '—') + '</small></div>')
+      + '<dl class="ct-card__clauses">'
+      +   '<div><dt>Signing bonus</dt><dd>' + (c.bonus > 0 ? fmtMoney(c.bonus) : '—') + '</dd></div>'
+      +   '<div><dt>Buyout clause</dt><dd>' + Number(c.buyoutMultiplier == null ? 2 : c.buyoutMultiplier).toFixed(1) + '&times; salary</dd></div>'
+      +   '<div><dt>Promise</dt><dd>' + (c.promise ? BTG.esc(c.promise.series + (c.promise.by ? ' by ' + c.promise.by : '')) : '—') + '</dd></div>'
+      + '</dl>'
+      + actions
+      + '</article>';
   }).join('');
 
   var offers = (DASH.offers || []);
@@ -2843,8 +2912,9 @@ function renderContracts() {
   offers.forEach(function (o, i) {
     const st = offerStatus(o);
     const offerClass = st === 'Rejected' ? 'denied' : (st === 'On Hold' ? 'warn' : '');
-    offerHtml += '<div class="offer ' + offerClass + '">'
-      + '<div class="offer-top"><span class="strong">' + BTG.esc(prettyTeam(o.team)) + ' → ' + BTG.esc(prettyTeam(o.target)) + '</span>' + (o.modify ? '<span class="tag-pill warn">Contract change</span>' : '') + (o.offerKind === 'loan' ? '<span class="tag-pill">Loan - ' + BTG.esc(o.loanTeam) + ' (' + (o.loanPercent || 0) + '% paid by them)</span>' : '')
+    var otr = teamRowFor(o.team);
+    offerHtml += '<div class="offer ' + offerClass + '" style="--ct-team:' + teamColorFor(o.team) + '">'
+      + '<div class="offer-top">' + (otr && BTG.teamLogoImg ? '<span class="offer-logo">' + BTG.teamLogoImg(otr.team_key, otr.series || 'F1', 26) + '</span>' : '') + '<span class="strong">' + BTG.esc(prettyTeam(o.team)) + ' → ' + BTG.esc(prettyTeam(o.target)) + '</span>' + (o.modify ? '<span class="tag-pill warn">Contract change</span>' : '') + (o.offerKind === 'loan' ? '<span class="tag-pill">Loan - ' + BTG.esc(o.loanTeam) + ' (' + (o.loanPercent || 0) + '% paid by them)</span>' : '')
       + '<span class="stamp">' + fmtMoney(o.salary) + ' · ' + BTG.esc(o.from || '—') + '–' + BTG.esc(o.till || '—') + (o.role ? ' · ' + BTG.esc(o.role) : '') + '</span></div>'
       + (o.message ? '<div class="offer-body">' + BTG.esc(o.message) + '</div>' : '')
       + (o.promise ? '<div class="offer-body">Promise: seat in <b>' + BTG.esc(o.promise.series) + '</b>' + (o.promise.by ? ' by <b>' + BTG.esc(o.promise.by) + '</b>' : '') + '</div>' : '')
@@ -2854,22 +2924,22 @@ function renderContracts() {
       + '</div>';
   });
 
-  var actionsHead = (role === 'tp' || role === 'driver') ? '<th>Actions</th>' : '';
-  var html = '<div class="ov-card" style="margin-bottom:18px;"><div class="ov-card-title">Signed contracts</div>'
-    + (rows ? '<div class="contract-table-scroll"><table class="contract-table"><thead><tr><th>Driver</th><th>Team</th><th>Salary</th><th>Period</th><th>Seat</th><th>Role</th><th>Promise</th><th>Bonus</th><th>Buyout</th>' + actionsHead + '</tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="muted">No contracts.</div>')
+  var html = '<div class="ct-block"><div class="ct-block__head"><h3>Signed contracts</h3><span>' + sorted.length + ' active</span></div>'
+    + (rows ? '<div class="ct-grid">' + rows + '</div>' : '<div class="ct-empty">No contracts on file.</div>')
     + '</div>'
-    + '<div class="ov-card" style="margin-bottom:18px;"><div class="ov-card-title">Pending offers</div>'
-    + (offerHtml || '<div class="muted">No pending offers.</div>')
+    + '<div class="ct-block"><div class="ct-block__head"><h3>Offers on the table</h3><span>' + offers.length + '</span></div>'
+    + (offerHtml ? '<div class="ct-offers">' + offerHtml + '</div>' : '<div class="ct-empty">No pending offers.</div>')
     + '</div>';
 
   html += contractExitRequestsHtml(role);
 
+  if (role === 'tp' || role === 'driver') html += '<div class="ct-block__head ct-block__head--sep"><h3>Negotiation desk</h3></div><div class="ct-forms">';
   if (role === 'tp') {
     var tpTeams = (DASH.tp.teams || []).map(function (t) { return t.key; });
     var tpTeamSel = selectedTpTeam();
     html += '<div class="ov-card"><div class="ov-card-title">Send a contract offer</div>'
       + '<div class="field-row"><div class="field"><label for="c-team-tp">Team</label><select id="c-team-tp">'
-      + (tpTeams.length ? tpTeams.map(function (k) { return '<option value="' + BTG.esc(k) + '"' + (k === tpTeamSel ? ' selected' : '') + '>' + BTG.esc(k) + '</option>'; }).join('') : '<option value="">— no team —</option>')
+      + (tpTeams.length ? tpTeams.map(function (k) { return '<option value="' + BTG.esc(k) + '"' + (k === tpTeamSel ? ' selected' : '') + '>' + BTG.esc(prettyTeam(k)) + '</option>'; }).join('') : '<option value="">— no team —</option>')
       + '</select></div><div class="field"><label for="c-driver">Driver</label><select id="c-driver">'
       + ((DASH.allDrivers && DASH.allDrivers.length)
           ? '<option value="">— choose a driver —</option>' + DASH.allDrivers.map(function (d) { return '<option>' + BTG.esc(d) + '</option>'; }).join('')
@@ -2916,6 +2986,7 @@ function renderContracts() {
       + '<button class="action action-lead" id="p-send-btn"><span>Send pay-for-seat</span></button><div class="result-line" id="p-result"></div></div>';
   }
 
+  if (role === 'tp' || role === 'driver') html += '</div>';
   if (role === 'driver' || role === 'tp') {
     var ad = DASH.autoDeny || {};
     html += '<div class="ov-card" style="margin-top:18px;"><div class="ov-card-title">Auto-deny rules</div>'
@@ -5002,6 +5073,26 @@ function renderDriver() {
     metaRow.classList.add('hidden');
   }
 
+  // Development banner (same look as the Overview banner)
+  var abEl = document.getElementById('attr-banner');
+  if (abEl) {
+    var dteam = prettyTeam(SELECTED.team);
+    var dband = (dteam && BTG.teamBandFor) ? BTG.teamBandFor(dteam) : null;
+    var nm = String(SELECTED.driver || '');
+    abEl.innerHTML = '<div class="ov-banner ov-banner--dev"' + (dband ? ' style="' + dband.style + '"' : '') + '>'
+      + '<div class="ov-banner__text">'
+      +   '<div class="ov-banner__kicker">Development programme &middot; ' + BTG.esc(CURRENT_YEAR || '') + '</div>'
+      +   '<div class="ov-banner__name">' + BTG.esc(nm.split(' ').slice(0, -1).join(' ')) + ' <b>' + BTG.esc(nm.split(' ').slice(-1)[0]) + '</b></div>'
+      +   '<div class="ov-banner__meta">'
+      +     (dteam && BTG.teamLogoImg ? '<span class="ov-banner__team">' + BTG.teamLogoImg(SELECTED.team, SELECTED.series || 'F1', 22) + '<span>' + BTG.esc(dteam) + '</span></span>' : '')
+      +     (SELECTED.nation ? '<span class="ov-banner__nat">' + BTG.flagImg(SELECTED.nation, 22, 15) + ' ' + BTG.esc(SELECTED.nation) + '</span>' : '')
+      +     (SELECTED.number ? '<span class="ov-banner__num">#' + BTG.esc(SELECTED.number) + '</span>' : '')
+      +   '</div>'
+      + '</div>'
+      + '<div class="ov-banner__photo">' + BTG.driverPhotoImg(nm, 240, 'ov-banner__img', CURRENT_YEAR) + '</div>'
+      + '</div>';
+  }
+
   // Stats readouts
   document.getElementById('ro-ovr').textContent = SELECTED.ovr.toFixed(1);
   document.getElementById('ro-target').textContent = (SELECTED.targetOvr || 0).toFixed(1);
@@ -5028,7 +5119,7 @@ function renderDriver() {
         + '<div class="attr-weight">Weight ' + weight + '%</div>'
         + '</div>'
         + '<div class="attr-right">'
-        + '<div class="attr-bar"><div class="attr-bar-fill" style="width:' + (base / 99 * 100) + '%"></div></div>'
+        + '<div class="attr-bar"><div class="attr-bar-fill" style="width:' + (base / 99 * 100) + '%"></div><div class="attr-bar-add" id="bar-add-' + attr.key + '" style="left:' + (base / 99 * 100) + '%"></div></div>'
         + '<div class="attr-val">' + base + '</div>'
         + '<div class="attr-delta" id="plus-' + attr.key + '"></div>'
         + '<div class="stepper">'
@@ -5402,6 +5493,8 @@ function refreshStepperState() {
   ATTR_GROUPS.forEach(g => g.keys.forEach(a => {
     var plusSpan = document.getElementById('plus-' + a.key);
     plusSpan.textContent = PENDING[a.key] > 0 ? ('+' + PENDING[a.key]) : '';
+    var addBar = document.getElementById('bar-add-' + a.key);
+    if (addBar) addBar.style.width = (PENDING[a.key] / 99 * 100) + '%';
     var atMax = SELECTED.attributes[a.key] + PENDING[a.key] >= ATTR_MAX;
     var wouldExceed = live >= target;
     document.getElementById('add-' + a.key).disabled = wouldExceed || atMax;
@@ -5425,6 +5518,17 @@ function updateLiveOvr(liveOverride) {
   el.textContent = live.toFixed(1);
   var target = SELECTED.targetOvr || 0;
   el.style.color = live > target + 0.05 ? 'var(--team-accent-hot)' : 'var(--moss)';
+  var cur = SELECTED.ovr || 0;
+  var fill = document.getElementById('ovr-meter-fill');
+  var note = document.getElementById('ovr-meter-note');
+  var room = target - cur;
+  var pct = room > 0 ? Math.max(0, Math.min(1, (live - cur) / room)) : 1;
+  if (fill) fill.style.width = (pct * 100).toFixed(1) + '%';
+  if (note) {
+    if (room <= 0.05) note.textContent = 'At target rating — no development points available right now.';
+    else if (live >= target - 0.05) note.textContent = 'Target reached — submit to lock in your upgrades.';
+    else note.textContent = (target - live).toFixed(1) + ' OVR of development still available. Weighted skills (higher %) raise OVR faster.';
+  }
 }
 
 document.getElementById('submit-btn').addEventListener('click', async () => {
@@ -7573,7 +7677,15 @@ function renderChat() {
       pickerWrap.classList.add('hidden');
     }
   }
-  if (headingEl) headingEl.textContent = (CHAT.activeRoom ? prettyTeam(CHAT.activeRoom) : 'Team') + ' Chat';
+  var roomName = CHAT.activeRoom ? prettyTeam(CHAT.activeRoom) : 'Team';
+  if (headingEl) headingEl.textContent = roomName + ' radio';
+  var titleEl = document.getElementById('chat-title');
+  if (titleEl) titleEl.textContent = roomName;
+  var logoEl = document.getElementById('chat-team-logo');
+  var trow = teamRowFor(CHAT.activeRoom);
+  if (logoEl) logoEl.innerHTML = (trow && BTG.teamLogoImg) ? BTG.teamLogoImg(trow.team_key, trow.series || 'F1', 34) : '';
+  var shell = document.getElementById('chat-shell');
+  if (shell) shell.style.setProperty('--cx-team', teamColorFor(CHAT.activeRoom));
 
   var st = CHAT.state[CHAT.activeRoom] || { messages: [], members: [] };
 
@@ -7583,23 +7695,54 @@ function renderChat() {
   if (me && ids.indexOf(me) === -1) members = [{ identity: me, role: (CURRENT_USER && CURRENT_USER.role) || '' }].concat(members);
   membersEl.innerHTML = members.length
     ? members.map(function (m) {
-        return '<div class="chat-member"><span class="chat-dot"></span>' + BTG.esc(m.identity)
-          + (m.identity === me ? ' <span style="color:var(--copy-faint);font-size:11px;">(You)</span>' : '')
-          + (m.role === 'tp' ? ' <span style="color:var(--copy-faint);font-size:11px;">(TP)</span>' : '')
-          + '</div>';
+        var roleLbl = m.role === 'tp' ? 'Team Principal' : (m.role === 'admin' ? 'Race control' : 'Driver');
+        return '<div class="chat-member">' + mailAvatar(m.identity, 'cx-av') + '<span class="cx-mem"><b>' + BTG.esc(m.identity)
+          + (m.identity === me ? ' <em>You</em>' : '') + '</b><small>' + roleLbl + '</small></span><span class="chat-dot"></span></div>';
       }).join('')
     : '<div class="muted" style="font-size:12px;padding:6px 8px;">No one online.</div>';
 
   var msgs = st.messages || [];
   if (!msgs.length) {
-    msgsEl.innerHTML = '<div class="muted" style="margin:auto;text-align:center;">No messages yet — say hi to your team.</div>';
+    msgsEl.innerHTML = '<div class="cx-empty"><b>Radio check</b><span>No messages yet — open the channel to your team.</span></div>';
   } else {
+    var prev = null;
     msgsEl.innerHTML = msgs.map(function (m) {
       const meMsg = CHAT.myIdentity && m.sender === CHAT.myIdentity;
-      return '<div class="chat-msg' + (meMsg ? ' me' : '') + '"><div class="who">' + BTG.esc(m.sender) + '</div>' + BTG.esc(m.message) + '</div>';
+      var first = prev !== m.sender; prev = m.sender;
+      var t = chatTime(m);
+      return '<div class="cx-msg' + (meMsg ? ' me' : '') + (first ? ' first' : '') + '">'
+        + (meMsg ? '' : (first ? mailAvatar(m.sender, 'cx-av') : '<span class="cx-av-gap"></span>'))
+        + '<div class="cx-bubble">'
+        + (first ? '<div class="who">' + BTG.esc(meMsg ? 'You' : m.sender) + (t ? '<span>' + t + '</span>' : '') + '</div>' : '')
+        + '<div class="txt">' + BTG.esc(m.message) + '</div></div></div>';
     }).join('');
     msgsEl.scrollTop = msgsEl.scrollHeight;
   }
+}
+
+function chatTime(m) {
+  var v = m.time || m.created_at || m.createdAt || m.ts || m.sent_at;
+  if (!v) return '';
+  var d = new Date(v); if (isNaN(d)) return '';
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+/* League team row (colours, logo) for a team key or name. */
+function teamRowFor(key) {
+  var low = String(key || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  if (!low) return null;
+  var data = null;
+  try { data = BTG.DBCache && BTG.DBCache.data ? BTG.DBCache.data() : null; } catch (e) {}
+  return ((data && data.teams) || []).filter(function (t) {
+    return String(t.team_key || '').toLowerCase().replace(/[^a-z0-9]+/g, '') === low
+      || String(t.team_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '') === low;
+  })[0] || null;
+}
+function teamColorFor(key) {
+  var r = teamRowFor(key);
+  var c = r && (r.color_primary || r.colour || r.color);
+  if (c && /^#?[0-9a-f]{6}$/i.test(c)) return c.charAt(0) === '#' ? c : '#' + c;
+  return '#e10600';
 }
 
 async function chatPollOnce() {
