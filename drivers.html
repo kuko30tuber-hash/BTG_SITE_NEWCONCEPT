@@ -341,6 +341,7 @@ body::before {
 </style>
 <link rel="stylesheet" href="css/f1-theme.css?v=8">
 <link rel="stylesheet" href="css/drivers-f1.css?v=2">
+<link rel="stylesheet" href="css/driver-tabs.css?v=2">
 </head>
 <body data-page="drivers">
 
@@ -380,6 +381,7 @@ body::before {
 <script src="js/db-cache.js?v=20261117-canonical-contract-names-17"></script>
 <script src="js/circuits.js"></script>
 <script src="js/data-loader.js?v=20261117-profile-team-16"></script>
+<script src="js/driver-tabs.js?v=2"></script>
 <script>
 (function() {
   /* Team colours, from the shared registry, so this page can paint a team's own colour. */
@@ -918,7 +920,9 @@ body::before {
       html += '</div></div>';
     }
 
-    html = heroHtml(d, profileTeam, color, tenure) + html + '</div>'; // dp-cards
+    html = heroHtml(d, profileTeam, color, tenure) + driverTabsHtml(d, {
+      perf: perf, grade: overallGrade, h2hPct: h2hScore, ptsShare: ptsShare, ls: ls, cr: cr, color: 'rgb(' + color + ')'
+    });
     panel.innerHTML = html;
     bindProfile(panel, d);
 
@@ -927,6 +931,53 @@ body::before {
     // TFG-style conic glow on every .dp-card (driven by --team-rgb + cursor)
     BTG.initCardGlow(panel);
   if (BTG.numberSlotHydrate) BTG.numberSlotHydrate();
+  }
+
+  /* ── Overview / Stats / Career panes (styles from js/driver-tabs.js) ── */
+  var DT_STYLE = (function () {
+    var q = String(new URLSearchParams(location.search).get('dt') || '').toUpperCase().replace(/[^ABC]/g, '');
+    /* Chosen designs: Overview = Broadcast (A), Stats = Dashboard (C), Career = Editorial (B). ?dt=ABC overrides for previews. */
+    return { overview: q[0] || 'A', stats: q[1] || 'C', career: q[2] || 'B' };
+  })();
+  function driverTabsHtml(d, o) {
+    if (!BTG.DriverTabs) return '';
+    var full = d.fullName || d.name;
+    var own = BTG.DriverTabs.data(full, activeSeries, activeSeason);
+    var mate = drivers.filter(function (x) { return x.id !== d.id && d.team && x.team === d.team && x.series === d.series && x.standings; })[0]
+      || drivers.filter(function (x) { return x.id !== d.id && d.team && x.team === d.team && x.series === d.series; })[0];
+    var perf = o.perf || {};
+    var ctx = {
+      name: full, series: activeSeries, season: activeSeason, color: o.color,
+      rows: own.rows, calendar: own.calendar,
+      mate: mate ? { name: mate.fullName || mate.name, rows: BTG.DriverTabs.data(mate.fullName || mate.name, activeSeries, activeSeason).rows } : null,
+      grade: o.grade, verdict: d.standings ? seasonVerdict(d, d.seasonStats || {}) : 'No classified results yet', h2hPct: o.h2hPct, ptsShare: o.ptsShare,
+      ratings: [
+        { label: 'Pace', short: 'Pace', val: perf.pace, grade: ratingGrade(perf.paceScore) },
+        { label: 'Qualifying', short: 'Quali', val: perf.qualifying, grade: ratingGrade(perf.qualiScore) },
+        { label: 'Racecraft', short: 'Racecraft', val: perf.racecraft, grade: ratingGrade(perf.raceScore) },
+        { label: perf.label || 'vs Teammate', short: 'Teammate', val: perf.teammate, grade: ratingGrade(perf.teamScore) },
+        { label: 'Reliability', short: 'Reliability', val: perf.reliability, grade: ratingGrade(perf.reliScore) }
+      ],
+      fav: favInfo(d),
+      lastSeason: o.ls ? { season: o.ls.season, races: o.ls.races, wins: o.ls.wins, podiums: o.ls.podiums, dnfs: o.ls.dnfs, points: o.ls.points, avgFinish: o.ls.avgFinish } : null,
+      career: o.cr || {}, history: d.history || [],
+      titles: (d.history || []).filter(function (h) { return String(h.pos) === '1' && (h.role || 'Driving') === 'Driving'; }).length,
+      contracts: (function () {
+        /* One row per team + role + series; extensions merge into one span. */
+        var out = [];
+        (BTG.DBCache && BTG.DBCache.contractHistory ? BTG.DBCache.contractHistory(full) : []).forEach(function (c) {
+          var k = [String(c.team_name || c.team_key || '').toLowerCase().replace(/[^a-z0-9]/g, ''), String(c.role || '').toLowerCase(), String(c.series || '').toLowerCase()].join('|'), hit = out.filter(function (o) { return o._k === k; })[0];
+          if (!hit) { out.push(Object.assign({ _k: k }, c)); return; }
+          if (c.from_year != null && (hit.from_year == null || Number(c.from_year) < Number(hit.from_year))) hit.from_year = c.from_year;
+          if (c.till_year != null && (hit.till_year == null || Number(c.till_year) > Number(hit.till_year))) hit.till_year = c.till_year;
+        });
+        return out.sort(function (a, b) { return (Number(a.from_year) || 0) - (Number(b.from_year) || 0); });
+      })(),
+      teamColor: function (t) { var c = dbTeamRgb(t); return c ? 'rgb(' + c + ')' : '#5a5a64'; }
+    };
+    return '<div class="dtx-panes" data-tab="overview">'
+      + ['overview', 'stats', 'career'].map(function (t) { return '<div class="dtx-pane" data-pane="' + t + '">' + BTG.DriverTabs.render(t, DT_STYLE[t], ctx) + '</div>'; }).join('')
+      + '</div>';
   }
 
   /* ── Profile hero, tabs and prev/next ─────────────────────────────── */
@@ -1006,7 +1057,7 @@ body::before {
   }
   function bindProfile(panel, d) {
     panel.classList.add('dpx-profile');
-    var cards = panel.querySelector('.dp-cards');
+    var cards = panel.querySelector('.dtx-panes') || panel.querySelector('.dp-cards');
     panel.querySelectorAll('.dpx-tabs button').forEach(function (b) {
       b.onclick = function () {
         panel.querySelectorAll('.dpx-tabs button').forEach(function (x) { x.classList.toggle('is-active', x === b); });
