@@ -340,6 +340,7 @@ body::before {
 .dp-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
 </style>
 <link rel="stylesheet" href="css/f1-theme.css?v=8">
+<link rel="stylesheet" href="css/drivers-f1.css?v=2">
 </head>
 <body data-page="drivers">
 
@@ -569,7 +570,9 @@ body::before {
         +   '<span class="f1-dcard__num">' + (d.carNumber ? BTG.numberSlot(d.carNumber, d.team, 34, 'f1-dcard__plate', false, undefined, activeSeason) : '') + '</span>'
         +   '<span class="f1-dcard__flag">' + (BTG.flagImg ? BTG.flagImg(d.nation, 20, 14, '') : '') + '</span>'
         + '</span>'
+        + (d.team && BTG.teamLogoImg ? '<span class="f1-dcard__logo">' + BTG.teamLogoImg(d.team, activeSeries, 26) + '</span>' : '')
         + '<span class="f1-dcard__photo">' + BTG.driverPhotoImg(full, 150, '', activeSeason) + '</span>'
+        + '<span class="f1-dcard__go">' + BTG.icon('arrow-right', 16) + '</span>'
         + '</button>';
     });
     html += '</div>';
@@ -577,8 +580,7 @@ body::before {
     if (BTG.numberSlotHydrate) BTG.numberSlotHydrate(panel);
     panel.querySelectorAll('.f1-dcard').forEach(function(card) {
       card.onclick = function() {
-        var chip = document.querySelector('#sb-list .dp-picker__chip[data-id="' + CSS.escape(card.dataset.id) + '"]');
-        if (chip) { chip.click(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        openDriver(card.dataset.id);
       };
     });
   }
@@ -706,56 +708,15 @@ body::before {
     var overallGrade = ratingGrade(perf.overallScore);
     var nameParts = (d.fullName || d.name).split(' ');
 
-    var html = '<div class="dp-main">';
-
-    // ══ LEFT ══
-    html += '<div class="dp-left">';
-
-    // Hero — wrapped in BorderGlow exactly like TFG (per-card, isSelected)
-    var heroBand = profileTeam && BTG.teamBandForReversed ? BTG.teamBandForReversed(profileTeam) : null;
-    var heroInner = '<div class="dp-card dp-hero dp-hero--band"'+(heroBand ? ' style="'+heroBand.style+'"' : '')+'>'
-      + '<div class="dp-hero__number">'+(d.carNumber ? BTG.numberSlot(d.carNumber, profileTeam, 56, 'dp-hero__num', false, undefined, activeSeason) : '')+'</div>'
-      + '<div class="dp-hero__photo" style="border-color:'+((heroBand && heroBand.ink) || ('rgb('+color+')'))+';box-shadow:0 0 24px rgb('+color+' / 0.2)">'
-      + BTG.driverPhotoImg(d.fullName || d.name, 76, '', activeSeason)
-      + '</div>'
-      + '<div class="dp-hero__info">'
-      + '<div class="dp-hero__name"><span class="dp-hero__first">'+(nameParts.slice(0,-1).join(' ')||'')+'</span><span class="dp-hero__last">'+(nameParts.slice(-1)[0]||'')+'</span></div>'
-      + '<div class="dp-hero__meta">' + (BTG.flagImg ? BTG.flagImg(d.nation, 18, 13, 'dp-hero__flag') : '') + '</div>'
-      + '<div class="dp-hero__team">'
-      + (profileTeam ? BTG.entryLogoImg(profileTeam, profileTeam?d.car:null, d.series || activeSeries, 18) + '<span>'+BTG.esc(BTG.entryLabel(profileTeam, profileTeam?d.car:null))+'</span>' : '<span class="dp-hero__free">Free agent</span>')
-      + '</div>'
-      + (d.academy ? '<div class="dp-hero__academy">'
-          + '<span class="dp-hero__acad-badge">' + BTG.teamLogoImg(d.academy, d.series || activeSeries, 14) + '</span>'
-          + '<span>'+BTG.esc(acadName)+(d.academyRole === 'Reserve' ? ' Reserve' : ' Academy')+'</span></div>' : '')
-      + '</div></div>';
-    html += BTG.wrapCard(heroInner, {
-      teamColor: color,
-      backgroundColor: '#161618',
-      borderRadius: 8,
-      glowRadius: 12,
-      glowIntensity: 0.45,
-      isSelected: true,
-      className: 'dp-hero-frame'
-    });
+    var html = '<div class="dp-cards" data-tab="overview">';
 
     // Contract — tenure computed from history (scoped to the current series)
     var tenure = '—';
     var firstSeasonWithTeam = (d.history||[]).find(function(h){return h.series === d.series && h.team && h.team === profileTeam;});
     if (firstSeasonWithTeam) tenure = 'since ' + firstSeasonWithTeam.season;
-    html += '<div class="dp-card"><div class="dp-card__title">Contract</div>'
-      + '<div class="dp-contract">'
-      + '<div class="dp-contract__row"><span class="dp-contract__label">Team Tenure</span><span class="dp-contract__val">'+tenure+'</span></div>'
-      + '<div class="dp-contract__row"><span class="dp-contract__label">Contract Until</span><span class="dp-contract__val">—</span></div>'
-      + '<div class="dp-contract__row"><span class="dp-contract__label">Status</span><span class="dp-contract__val">—</span></div>'
-      + '</div></div>';
-
-    // Season Position
-    html += '<div class="dp-card"><div class="dp-card__title">Season Position</div>'
-      + '<div class="dp-pos"><span class="dp-pos__rank">'+(d.standings?'P'+d.standings.pos:'—')+'</span><span class="dp-pos__pts">'+(d.standings?d.standings.pts+' pts':'—')+'</span></div></div>';
-
     // Last Season (scoped to the current series)
     var ls = (d.history||[]).find(function(h){return h.series === d.series && h.season===activeSeason-1;});
-    html += '<div class="dp-card"><div class="dp-card__title">Last Season · '+(activeSeason-1)+'</div>'
+    html += '<div class="dp-card" data-t="stats"><div class="dp-card__title">Last Season · '+(activeSeason-1)+'</div>'
       + '<div class="dp-prev">'
       + '<div class="dp-prev__row"><span>Position</span><span>'+(ls&&ls.pos&&ls.pos!=='—'?'P'+ls.pos:'—')+'</span></div>'
       + '<div class="dp-prev__row"><span>Points</span><span>'+(ls&&ls.points!=null?ls.points:'—')+'</span></div>'
@@ -769,10 +730,6 @@ body::before {
     // Favorite Track + Favorite Track Type (whole career)
     html += renderFavCard(d);
 
-    html += '</div>'; // left
-
-    // ══ CENTER ══
-    html += '<div class="dp-center">';
 
     // Season Performance — Pace (30% quali lap / 70% avg lap), Qualifying,
     // Racecraft, vs Teammate (20% quali / 20% avg lap / 60% race) and
@@ -784,7 +741,7 @@ body::before {
       {label: perf.label, val: perf.teammate, color:'#f59e0b', score: perf.teamScore},
       {label:'Reliability', val: perf.reliability, color:'#ef4444', score: perf.reliScore}
     ];
-    html += '<div class="dp-card"><div class="dp-card__title">Season Performance</div>'
+    html += '<div class="dp-card" data-t="overview"><div class="dp-card__title">Season Performance</div>'
       + '<div class="dp-grade__overall '+gradeCls(overallGrade)+'" style="color:'+gradeColor(overallGrade)+'">'+overallGrade+'</div>'
       + '<div class="dp-grade__bars">'
       + perfBars.map(function(p){ return gbar(p.label, p.val, p.color, ratingGrade(p.score)); }).join('')
@@ -792,11 +749,11 @@ body::before {
 
     // Season Race Positions — sparkline
     var spark = buildSparkline(d);
-    html += '<div class="dp-card"><div class="dp-card__title">Season Race Positions</div>'
+    html += '<div class="dp-card" data-t="overview"><div class="dp-card__title">Season Race Positions</div>'
       + '<div class="dp-sparkline" id="sparkline">'+spark+'</div></div>';
 
     // Season Stats
-    html += '<div class="dp-card"><div class="dp-card__title">Season Stats</div>'
+    html += '<div class="dp-card" data-t="overview stats"><div class="dp-card__title">Season Stats</div>'
       + '<div class="dp-stats-grid">'
       + statCell(ss.races||'—','Races')+statCell(ss.avgFinish||'—','Avg Finish')+statCell(ss.wins||'—','Wins')+statCell(ss.avgGrid||'—','Avg Grid')
       + statCell(ss.podiums||'—','Podiums')+statCell(ss.poles||'—','Poles')+statCell(ss.dnfs||'—','DNFs')+statCell('—','Pole to win')
@@ -806,10 +763,6 @@ body::before {
       + statCell(ss.sprints||'—','Sprints')+statCell(ss.sprintWins||'—','Wins')+statCell(ss.sprintPodiums||'—','Podiums')+statCell(ss.sprintPts||'—','Points')
       + '</div></div></div>';
 
-    html += '</div>'; // center
-
-    // ══ RIGHT ══
-    html += '<div class="dp-right">';
 
     // Verdict
     var h2hScore = (perf.teammate != null) ? Math.round(perf.teammate) + '%' : '—';
@@ -822,7 +775,7 @@ body::before {
     }
     var myPts = d.standings ? (Number(d.standings.pts) || 0) : 0;
     var ptsShare = teamPts > 0 ? Math.round(myPts / teamPts * 100) + '%' : '—';
-    html += '<div class="dp-card"><div class="dp-card__title">Verdict</div>'
+    html += '<div class="dp-card" data-t="overview"><div class="dp-card__title">Verdict</div>'
       + '<div class="dp-verdict__label">'+(d.standings?seasonVerdict(d,ss):'—')+'</div>'
       + '<div class="dp-verdict__stats">'
       + '<div class="dp-verdict__stat"><span class="dp-verdict__val">'+h2hScore+'</span><span class="dp-verdict__lbl">H2H</span></div>'
@@ -832,7 +785,7 @@ body::before {
 
     // Career Race Record
     var cr = d.careerRecord || {};
-    html += '<div class="dp-card"><div class="dp-card__title">Career Race Record</div>'
+    html += '<div class="dp-card" data-t="stats career"><div class="dp-card__title">Career Race Record</div>'
       + '<div class="dp-career-grid">'
       + statCell(cr.starts||'—','Starts')+statCell(cr.wins||'—','Wins')+statCell(cr.podiums||'—','Podiums')+statCell(cr.points||'—','Points')
       + statCell(cr.dnfs||'—','DNFs')+statCell(cr.bestFinish||'—','Best Finish')+statCell(cr.avgFinish||'—','Avg Finish')+statCell(cr.yrs||'—','Yrs in '+BTG.esc(d.series||'Series'))
@@ -841,7 +794,7 @@ body::before {
 
     // Past Seasons (full career across every series — same driver, not duplicated)
     if (d.history && d.history.length) {
-      html += '<div class="dp-card"><div class="dp-card__title">Past Seasons</div>'
+      html += '<div class="dp-card" data-t="career"><div class="dp-card__title">Past Seasons</div>'
         + '<div class="dp-past-head"><span>Season</span><span>Series</span><span>Team</span><span class="px">Pos</span><span class="px">Wins</span><span class="px">Pods</span><span class="px">Pts</span><span class="ps">Rating</span></div>'
         + d.history.map(function(h) {
           var hcolor = dbTeamRgb(h.team) || '100,100,100';
@@ -859,10 +812,8 @@ body::before {
     }
 
     // Grid Penalties
-    html += '<div class="dp-card"><div class="dp-card__title">Grid Penalties</div><div style="color:var(--text-disabled);font-size:12px;padding:8px">No grid penalties</div></div>';
+    html += '<div class="dp-card" data-t="stats"><div class="dp-card__title">Grid Penalties</div><div style="color:var(--text-disabled);font-size:12px;padding:8px">No grid penalties</div></div>';
 
-    html += '</div>'; // right
-    html += '</div>'; // dp-main
 
     // Career Timeline (full width below) — TFG-style year blocks. The main track
     // only shows DRIVING stints (reserve/junior/academy never split a season in
@@ -891,7 +842,7 @@ body::before {
         return 'rgb(' + c + ')';
       };
 
-      html += '<div class="dp-card" style="margin:0 12px"><div class="dp-card__title">Career Timeline</div>'
+      html += '<div class="dp-card" data-t="career wide"><div class="dp-card__title">Career Timeline</div>'
         + '<div class="dp-tl">';
 
       if (hist.length) {
@@ -967,13 +918,107 @@ body::before {
       html += '</div></div>';
     }
 
+    html = heroHtml(d, profileTeam, color, tenure) + html + '</div>'; // dp-cards
     panel.innerHTML = html;
+    bindProfile(panel, d);
 
     // Enable cursor-tracking glow on any interactive glow cards
     BTG.initBorderGlow(panel);
     // TFG-style conic glow on every .dp-card (driven by --team-rgb + cursor)
     BTG.initCardGlow(panel);
   if (BTG.numberSlotHydrate) BTG.numberSlotHydrate();
+  }
+
+  /* ── Profile hero, tabs and prev/next ─────────────────────────────── */
+  function contractUntil(d) {
+    var rows = BTG.DBCache && BTG.DBCache.contractHistory ? BTG.DBCache.contractHistory(d.fullName || d.name) : [];
+    var y = Number(activeSeason), hit = rows.filter(function (h) {
+      return String(h.role) === 'Driving' && (!h.series || String(h.series) === String(activeSeries))
+        && (h.from_year == null || Number(h.from_year) <= y) && (h.till_year != null && Number(h.till_year) >= y);
+    })[0];
+    return hit ? Number(hit.till_year) : null;
+  }
+  function heroHtml(d, profileTeam, color, tenure) {
+    var full = d.fullName || d.name || '';
+    var parts = full.split(' '), last = parts.length > 1 ? parts.pop() : full, first = parts.join(' ');
+    var team = profileTeam ? BTG.entryLabel(profileTeam, d.car) : '';
+    var band = profileTeam && BTG.teamBandFor ? BTG.teamBandFor(profileTeam) : null;
+    var list = getSeriesDrivers(), idx = list.findIndex(function (x) { return x.id === d.id; });
+    var prev = idx > 0 ? list[idx - 1] : list[list.length - 1], next = idx >= 0 && idx < list.length - 1 ? list[idx + 1] : list[0];
+    var until = contractUntil(d);
+    var ss = d.seasonStats || {};
+    function stat(v, k) { return '<div class="dpx-stat"><b>' + v + '</b><span>' + k + '</span></div>'; }
+    var ovr = Number(d.ovr) || null;
+    if (!ovr) { try { var dbRow = ((BTG.DBCache.data() || {}).drivers || []).filter(function (x) { return String(x.full_name).toLowerCase() === full.toLowerCase(); })[0]; ovr = dbRow ? Number(dbRow.ovr) || null : null; } catch (e) {} }
+    if (ovr) ovr = Math.round(ovr);
+    return '<div class="dpx-nav">'
+      +   '<button type="button" class="dpx-back" data-act="back">' + BTG.icon('arrow-left', 15) + ' All drivers</button>'
+      +   (list.length > 1 && prev && next ? '<div class="dpx-pn">'
+      +     '<button type="button" data-act="go" data-id="' + BTG.esc(prev.id) + '" title="Previous driver">' + BTG.icon('arrow-left', 14) + '<span>' + BTG.esc(prev.fullName || prev.name) + '</span></button>'
+      +     '<button type="button" data-act="go" data-id="' + BTG.esc(next.id) + '" title="Next driver"><span>' + BTG.esc(next.fullName || next.name) + '</span>' + BTG.icon('arrow-right', 14) + '</button>'
+      +   '</div>' : '')
+      + '</div>'
+      + '<section class="dpx-hero"' + (band ? ' style="' + band.style + '"' : ' style="background:linear-gradient(90deg,#303037,#4a4a52);color:#fff"') + '>'
+      +   '<div class="dpx-hero__text">'
+      +     '<div class="dpx-kicker">' + BTG.esc(activeSeries) + ' &middot; ' + BTG.esc(activeSeason) + (d.academy ? ' &middot; ' + BTG.esc(d.academyRole === 'Reserve' ? 'Reserve' : 'Academy') : '') + '</div>'
+      +     '<h1 class="dpx-name"><span>' + BTG.esc(first) + '</span><b>' + BTG.esc(last) + '</b></h1>'
+      +     '<div class="dpx-meta">'
+      +       (d.nation ? '<span class="dpx-chip">' + (BTG.flagImg ? BTG.flagImg(d.nation, 22, 15) : '') + BTG.esc(d.nation) + '</span>' : '')
+      +       (profileTeam ? '<span class="dpx-chip">' + BTG.entryLogoImg(profileTeam, d.car, d.series || activeSeries, 20) + BTG.esc(team) + '</span>' : '<span class="dpx-chip">Free agent</span>')
+      +       (d.carNumber ? '<span class="dpx-chip dpx-chip--num">#' + BTG.esc(d.carNumber) + '</span>' : '')
+      +     '</div>'
+      +     '<div class="dpx-contract">' + BTG.icon('flag', 14) + ' Contract: '
+      +       (tenure && tenure !== '—' ? '<b>' + BTG.esc(tenure) + '</b>' : '')
+      +       (until ? (tenure && tenure !== '—' ? ' &middot; ' : '') + 'until <b>' + until + '</b>' : (tenure && tenure !== '—' ? '' : '<b>—</b>'))
+      +     '</div>'
+      +   '</div>'
+      +   (d.carNumber ? '<div class="dpx-bignum">' + BTG.numberSlot(d.carNumber, profileTeam, 120, 'dpx-bignum__img', false, undefined, activeSeason) + '</div>' : '')
+      +   '<div class="dpx-photo">' + BTG.driverPhotoImg(full, 320, 'dpx-photo__img', activeSeason) + '</div>'
+      +   (ovr != null && !isNaN(ovr) ? '<div class="dpx-ovr"><b>' + ovr + '</b><span>OVR</span></div>' : '')
+      + '</section>'
+      + '<div class="dpx-strip">'
+      +   stat(d.standings ? 'P' + BTG.esc(d.standings.pos) : '—', 'Championship')
+      +   stat(d.standings ? BTG.esc(d.standings.pts) : '—', 'Points')
+      +   stat(ss.wins || 0, 'Wins')
+      +   stat(ss.podiums || 0, 'Podiums')
+      +   stat(ss.poles || 0, 'Poles')
+      +   stat(until || '—', 'Contract until')
+      + '</div>'
+      + '<div class="dpx-tabs" role="tablist">'
+      +   '<button type="button" class="is-active" data-tab="overview">Overview</button>'
+      +   '<button type="button" data-tab="stats">Stats</button>'
+      +   '<button type="button" data-tab="career">Career</button>'
+      + '</div>';
+  }
+  function syncDriverUrl(d) {
+    var q = new URLSearchParams();
+    if (d) { q.set('driver', d.fullName || d.name); }
+    q.set('series', activeSeries); q.set('season', activeSeason);
+    history.replaceState(null, '', location.pathname + '?' + q.toString());
+  }
+  function openDriver(id) {
+    var d = drivers.find(function (x) { return String(x.id) === String(id); });
+    if (!d) return;
+    selectedDriverId = d.id;
+    renderDetail(d.id);
+    syncDriverUrl(d);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function bindProfile(panel, d) {
+    panel.classList.add('dpx-profile');
+    var cards = panel.querySelector('.dp-cards');
+    panel.querySelectorAll('.dpx-tabs button').forEach(function (b) {
+      b.onclick = function () {
+        panel.querySelectorAll('.dpx-tabs button').forEach(function (x) { x.classList.toggle('is-active', x === b); });
+        if (cards) cards.setAttribute('data-tab', b.dataset.tab);
+      };
+    });
+    panel.querySelectorAll('[data-act]').forEach(function (b) {
+      b.onclick = function () {
+        if (b.dataset.act === 'back') { selectedDriverId = null; showGrid(); syncDriverUrl(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        else openDriver(b.dataset.id);
+      };
+    });
   }
 
   function gradeOf(v) {
@@ -1342,7 +1387,7 @@ body::before {
   function renderFavCard(d) {
     var f = favInfo(d);
     var esc = function (v) { return BTG.esc(v); };
-    var html = '<div class="dp-card"><div class="dp-card__title">Favorite</div>';
+    var html = '<div class="dp-card" data-t="overview"><div class="dp-card__title">Favorite</div>';
     if (!f) { html += '<div style="color:#8a8a94;font-size:12px;padding:4px 2px;">No race data yet.</div></div>'; return html; }
     var flag = f.flag ? BTG.flagImg(f.flag, 22, 16) : '';
     var note = f.best ? ('Best: P' + f.best + (f.bestCount > 1 ? ' · ' + f.bestCount + 'x' : '')) : '—';
