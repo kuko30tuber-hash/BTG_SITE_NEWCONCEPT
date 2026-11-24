@@ -219,3 +219,99 @@ body[data-page="dashboard"] .page { max-width: 1400px; padding: 20px 24px 40px; 
 .mail-folders .folder.active::before { content: ""; position: absolute; left: -10px; top: 7px; bottom: 7px; width: 4px; border-radius: 0 3px 3px 0; background: var(--f1-red); }
 .mail-folders .folder-count { font-family: 'Titillium Web', sans-serif !important; font-weight: 700; }
 .mail-folders .folder.active .folder-count { background: var(--f1-red) !important; }
+
+/* ═══ Mailbox v2: folder tabs on top, list | reading pane ════════════════════ */
+.mx-bar { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,.12); margin-bottom: 16px; }
+.mx-tabs { display: flex; gap: 4px; }
+.mx-tab { position: relative; border: 0; background: none; cursor: pointer; padding: 12px 18px; font: 400 16px 'Formula1', sans-serif; color: var(--f1-text-2); display: inline-flex; align-items: center; gap: 8px; }
+.mx-tab:hover { color: #fff; }
+.mx-tab.active { color: #fff; font-weight: 700; }
+.mx-tab.active::after { content: ""; position: absolute; left: 18px; right: 18px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--f1-red); }
+.mx-count { background: var(--f1-red); color: #fff; border-radius: 1000px; min-width: 20px; padding: 1px 7px; font: 700 11px 'Titillium Web', sans-serif; text-align: center; }
+.mx-actions { display: flex; gap: 8px; padding-bottom: 10px; }
+
+.mail-app.mx-app { grid-template-columns: minmax(300px, 400px) minmax(0, 1fr) !important; min-height: 600px; background: var(--f1-card) !important; border: 1px solid var(--f1-line) !important; }
+.mx-app .mail-list { display: flex; flex-direction: column; background: #1a1a22 !important; border-right: 1px solid var(--f1-line) !important; }
+.mx-app .mail-toolbar { display: grid !important; grid-template-columns: 1fr auto; gap: 8px !important; padding: 12px !important; border-bottom: 1px solid var(--f1-line) !important; }
+.mx-app .mail-toolbar #mail-search { grid-column: 1 / -1; padding: 9px 12px !important; border-radius: 1000px !important; }
+.mx-app .mail-toolbar select { border-radius: 1000px !important; padding: 6px 12px !important; font-size: 13px !important; }
+.mx-app .mail-important-only { font: 600 13px 'Titillium Web', sans-serif !important; color: var(--f1-text-2) !important; }
+.mx-admin-filter { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font: 600 13px 'Titillium Web', sans-serif; color: var(--f1-text-2); }
+.mx-admin-filter select { flex: 1; }
+.mx-rows { flex: 1; overflow-y: auto; }
+
+.mx-row { display: grid !important; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; align-items: start; padding: 13px 14px 13px 16px !important; border-bottom: 1px solid rgba(255,255,255,.06) !important; position: relative; transition: background .12s; }
+.mx-row:hover { background: rgba(255,255,255,.04) !important; }
+.mx-row.active { background: rgba(255,255,255,.08) !important; }
+.mx-row.active::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; border-radius: 0 3px 3px 0; background: var(--f1-red); }
+.mx-row__main { min-width: 0; }
+.mx-row .mail-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.mx-row .mail-sender { flex: 1; min-width: 0; font: 600 14px 'Titillium Web', sans-serif !important; color: var(--f1-text-2) !important; }
+.mx-row.unread .mail-sender { font-weight: 700 !important; color: #fff !important; }
+.mx-row .mail-subj { font: 600 13px 'Titillium Web', sans-serif !important; color: var(--f1-text-2) !important; }
+.mx-row.unread .mail-subj { color: #fff !important; font-weight: 700 !important; }
+.mx-row .mail-body { font: 400 12px 'Titillium Web', sans-serif !important; color: var(--f1-text-3) !important; margin-top: 2px; }
+.mx-row .mail-date { font: 700 11px 'Titillium Web', sans-serif !important; color: var(--f1-text-3) !important; text-transform: uppercase; }
+.mx-row .unread-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--f1-red); flex: none; margin: 0 !important; }
+.mx-to { color: var(--f1-text-3); font-weight: 600; }
+.mx-arrow { color: var(--f1-text-3); }
+
+.mx-avatar { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: none; overflow: hidden; background: #303037; color: #fff; font: 700 14px 'Formula1', sans-serif; }
+.mx-avatar img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+.mx-avatar--logo img { width: 74% !important; height: 74% !important; object-fit: contain; }
+.mx-avatar--lg { width: 48px; height: 48px; font-size: 16px; }
+
+.mx-blocked { border-top: 1px solid var(--f1-line); padding: 10px 14px 12px; font: 600 12px 'Titillium Web', sans-serif; color: var(--f1-text-3); }
+.mx-blocked__title { text-transform: uppercase; letter-spacing: .05em; font-size: 11px; margin-bottom: 4px; }
+.mx-blocked__row { display: flex; justify-content: space-between; align-items: center; gap: 6px; line-height: 1.9; }
+.mx-blocked .modal-close { width: 20px; height: 20px; font-size: 12px; }
+
+.mx-app .mail-read { padding: 28px 32px !important; background: var(--f1-card); }
+.mx-app .read-subj { font: 700 clamp(20px, 2vw, 26px)/1.2 'Formula1', sans-serif !important; color: #fff; margin-bottom: 16px; text-transform: none; letter-spacing: 0 !important; }
+.mx-app .read-meta { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; margin-bottom: 18px; border-bottom: 1px solid var(--f1-line); font-family: 'Titillium Web', sans-serif; }
+.mx-app .read-body { font: 400 15px/1.65 'Titillium Web', sans-serif !important; color: #e4e4ea !important; white-space: pre-wrap; }
+.mx-app .read-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--f1-line); }
+.mx-app .mail-empty { font: 600 14px 'Titillium Web', sans-serif; }
+
+@media (max-width: 900px) {
+  .mail-app.mx-app { grid-template-columns: 1fr !important; }
+  .mx-app .mail-list { border-right: 0 !important; border-bottom: 1px solid var(--f1-line) !important; max-height: 380px; }
+  .mx-app .mail-read { padding: 20px !important; }
+  .mx-bar { align-items: stretch; }
+  .mx-actions { padding-bottom: 8px; }
+}
+
+/* ═══ Money log v2: summary + month blocks ════════════════════════════════════ */
+#transactions-section .tool-card { padding: 0 !important; overflow: hidden; }
+#transactions-list { padding: 0 0 16px; }
+#transactions-list > .muted { padding: 20px 22px; }
+.ml-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--f1-line); background: #1a1a22; }
+.ml-sum { display: flex; flex-direction: column; gap: 4px; padding: 18px 22px; }
+.ml-sum + .ml-sum { border-left: 1px solid var(--f1-line); }
+.ml-sum__k { font: 700 12px 'Titillium Web', sans-serif; text-transform: uppercase; letter-spacing: .04em; color: var(--f1-text-3); }
+.ml-sum__v { font: 700 24px 'Formula1', sans-serif; }
+.ml-pos { color: #34d399; }
+.ml-neg { color: #ff6b63; }
+.ml-month { padding: 6px 22px 0; }
+.ml-month__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px 0 8px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.ml-month__name { font: 700 16px 'Formula1', sans-serif; text-transform: uppercase; color: #fff; }
+.ml-month__net { font: 700 15px 'Formula1', sans-serif; }
+.ml-month__net small { font: 700 11px 'Titillium Web', sans-serif; color: var(--f1-text-3); margin-left: 6px; text-transform: uppercase; }
+.ml-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.ml-row:last-child { border-bottom: 0; }
+.ml-icon { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font: 700 14px 'Titillium Web', sans-serif; }
+.ml-icon--in { background: rgba(52,211,153,.14); color: #34d399; }
+.ml-icon--out { background: rgba(255,107,99,.14); color: #ff6b63; }
+.ml-label { font: 600 14px 'Titillium Web', sans-serif; color: #e4e4ea; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ml-amt { font: 700 15px 'Formula1', sans-serif; white-space: nowrap; }
+#transactions-list .tx-toggle { margin: 16px 22px 0; }
+@media (max-width: 640px) {
+  .ml-summary { grid-template-columns: 1fr; }
+  .ml-sum + .ml-sum { border-left: 0; border-top: 1px solid var(--f1-line); }
+  .ml-sum { flex-direction: row; justify-content: space-between; align-items: baseline; padding: 12px 16px; }
+  .ml-sum__v { font-size: 18px; }
+  .ml-month { padding: 6px 16px 0; }
+}
+.mx-avatar--logo { background: #26262e !important; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.mx-avatar--logo img { width: 78% !important; height: 78% !important; }

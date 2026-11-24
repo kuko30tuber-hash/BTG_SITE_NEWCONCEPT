@@ -572,7 +572,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
 <link rel="stylesheet" href="css/radio-card.css">
 <link rel="stylesheet" href="css/dashboard-radio.css?v=container-preview-2">
 <link rel="stylesheet" href="css/f1-theme.css?v=8">
-<link rel="stylesheet" href="css/dashboard-f1.css?v=4">
+<link rel="stylesheet" href="css/dashboard-f1.css?v=6">
 </head>
 <body data-page="dashboard">
 
@@ -2532,24 +2532,42 @@ async function renderTransactions() {
     wrap.innerHTML = '<div class="muted">No transactions yet. Salaries, sponsor payments, parts and bonuses are logged here as money moves.</div>';
     return;
   }
-  const groups = {};
+  // Month blocks: "May 2024" header with the month's net, rows with an in/out icon.
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const months = {};
+  let totalIn = 0, totalOut = 0;
   rows.forEach(function (r) {
-    const key = r.league_date || (r.created_at ? r.created_at.slice(0, 10) : '—');
-    (groups[key] = groups[key] || []).push(r);
+    const d = r.league_date || (r.created_at ? r.created_at.slice(0, 10) : '');
+    const key = /^\d{4}-\d{2}/.test(d) ? d.slice(0, 7) : '—';
+    (months[key] = months[key] || []).push(r);
+    if (r.amount >= 0) totalIn += r.amount; else totalOut += -r.amount;
   });
-  let html = '';
-  const dates = Object.keys(groups).sort().reverse();
-  dates.forEach(function (key, i) {
-    html += '<div class="tx-group' + (i >= 3 ? ' tx-more' : '') + '"><div class="tx-date">' + BTG.esc(key) + '</div>';
-    groups[key].forEach(function (r) {
-      const cls = r.amount >= 0 ? 'pos' : 'neg';
-      html += '<div class="tx-row"><span class="tx-label">' + BTG.esc(prettyTeamsIn(r.label)) + '</span>'
-        + '<span class="tx-amt ' + cls + '">' + (r.amount >= 0 ? '+' : '−') + fmtMoney(Math.abs(r.amount)) + '</span></div>';
+  const keys = Object.keys(months).sort().reverse();
+  const net = totalIn - totalOut;
+  const sign = function (v) { return (v >= 0 ? '+' : '−') + fmtMoney(Math.abs(v)); };
+  let html = '<div class="ml-summary">'
+    + '<div class="ml-sum"><span class="ml-sum__k">Money in</span><span class="ml-sum__v ml-pos">+' + fmtMoney(totalIn) + '</span></div>'
+    + '<div class="ml-sum"><span class="ml-sum__k">Money out</span><span class="ml-sum__v ml-neg">−' + fmtMoney(totalOut) + '</span></div>'
+    + '<div class="ml-sum"><span class="ml-sum__k">Net</span><span class="ml-sum__v ' + (net >= 0 ? 'ml-pos' : 'ml-neg') + '">' + sign(net) + '</span></div>'
+    + '</div>';
+  keys.forEach(function (key, i) {
+    const list = months[key];
+    const mNet = list.reduce(function (a, r) { return a + (Number(r.amount) || 0); }, 0);
+    const label = key === '—' ? 'Undated' : MONTHS[Number(key.slice(5, 7)) - 1] + ' ' + key.slice(0, 4);
+    html += '<div class="ml-month' + (i >= 3 ? ' tx-more' : '') + '">'
+      + '<div class="ml-month__head"><span class="ml-month__name">' + BTG.esc(label) + '</span>'
+      + '<span class="ml-month__net ' + (mNet >= 0 ? 'ml-pos' : 'ml-neg') + '">' + sign(mNet) + '<small>net</small></span></div>';
+    list.forEach(function (r) {
+      const pos = r.amount >= 0;
+      html += '<div class="ml-row">'
+        + '<span class="ml-icon ' + (pos ? 'ml-icon--in' : 'ml-icon--out') + '">' + (pos ? '↓' : '↑') + '</span>'
+        + '<span class="ml-label">' + BTG.esc(prettyTeamsIn(r.label)) + '</span>'
+        + '<span class="ml-amt ' + (pos ? 'ml-pos' : 'ml-neg') + '">' + sign(r.amount) + '</span></div>';
     });
     html += '</div>';
   });
-  if (dates.length > 3) {
-    html += '<button type="button" class="action action-compact tx-toggle" onclick="var w=this.parentNode;var open=w.classList.toggle(\'tx-open\');this.querySelector(\'span\').textContent=open?\'Show less\':\'Show all (' + dates.length + ' dates)\';"><span>Show all (' + dates.length + ' dates)</span></button>';
+  if (keys.length > 3) {
+    html += '<button type="button" class="action action-compact tx-toggle" onclick="var w=this.parentNode;var open=w.classList.toggle(\'tx-open\');this.querySelector(\'span\').textContent=open?\'Show less\':\'Show all (' + keys.length + ' months)\';"><span>Show all (' + keys.length + ' months)</span></button>';
   }
   wrap.innerHTML = html;
 }
@@ -5741,80 +5759,81 @@ function renderMailbox() {
   if (MAIL_SEL[MAIL_FOLDER] == null || MAIL_SEL[MAIL_FOLDER] >= items.length) MAIL_SEL[MAIL_FOLDER] = items.length ? 0 : -1;
   const sel = MAIL_SEL[MAIL_FOLDER] >= 0 ? items[MAIL_SEL[MAIL_FOLDER]] : null;
 
-  var html = '<div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;">'
+  // Top bar: folder tabs (F1 underline tabs) + Refresh / Compose
+  var html = '<div class="mx-bar"><div class="mx-tabs" role="tablist">';
+  folders.forEach(function (f) {
+    html += '<button type="button" role="tab" class="mx-tab' + (f.id === MAIL_FOLDER ? ' active' : '') + '" onclick="setMailFolder(\'' + f.id + '\')">'
+      + f.label + (f.count > 0 ? '<span class="mx-count">' + f.count + '</span>' : '') + '</button>';
+  });
+  html += '</div><div class="mx-actions">'
     + '<button class="action action-quiet action-compact" onclick="refreshMail()"><span>Refresh</span></button>'
     + '<button class="action action-lead action-compact" onclick="openMailCompose()"><span>Compose</span></button>'
-    + '</div>'
-    + '<div class="mail-app">';
+    + '</div></div>'
+    + '<div class="mail-app mx-app">';
 
-  html += '<div class="mail-folders">';
-  folders.forEach(function (f) {
-    html += '<div class="folder ' + (f.id === MAIL_FOLDER ? 'active' : '') + '" onclick="setMailFolder(\'' + f.id + '\')"><span>' + f.label + '</span>'
-      + (f.count > 0 ? '<span class="folder-count">' + f.count + '</span>' : '') + '</div>';
-  });
+  // Left column: toolbar + message list (+ admin / blocked extras underneath)
+  html += '<div class="mail-list">'
+    + '<div class="mail-toolbar">'
+    + '<input type="search" id="mail-search" placeholder="Search mail…" value="' + BTG.esc(MAIL_SEARCH) + '" oninput="onMailSearch(this)">'
+    + '<select id="mail-sender-filter" onchange="MAIL_SENDER_FILTER=this.value;renderMailbox();">'
+    + '<option value="">All senders</option>'
+    + mailSenders.map(function (s) { return '<option value="' + BTG.esc(s) + '"' + (MAIL_SENDER_FILTER === s ? ' selected' : '') + '>' + BTG.esc(s) + '</option>'; }).join('')
+    + '</select>'
+    + '<label class="mail-important-only"><input type="checkbox" ' + (MAIL_IMPORTANT_ONLY ? 'checked ' : '') + 'onchange="MAIL_IMPORTANT_ONLY=this.checked;renderMailbox()"> ★ Important</label>';
   if (role === 'admin') {
     var people = [];
     DRIVERS.forEach(function (d) { if (d.driver) people.push(d.driver); });
     ((DASH && DASH.teamPrincipals) || []).forEach(function (t) { if (t.name) people.push(t.name); });
-    html += '<div class="field" style="margin-top:12px;padding:0 4px;">'
-      + '<label for="mail-person-filter">Show mail for</label>'
+    html += '<label class="mx-admin-filter">Mail for '
       + '<select id="mail-person-filter" onchange="MAIL_FILTER=this.value;renderMailbox();">'
       + '<option value="BTG Officials"' + (MAIL_FILTER === 'BTG Officials' ? ' selected' : '') + '>BTG Officials</option>'
       + '<option value=""' + (MAIL_FILTER === '' ? ' selected' : '') + '>— everyone —</option>'
       + people.map(function (p) { return '<option value="' + BTG.esc(p) + '"' + (MAIL_FILTER === p ? ' selected' : '') + '>' + BTG.esc(p) + '</option>'; }).join('')
-      + '</select></div>';
+      + '</select></label>';
   }
+  html += '</div><div class="mx-rows">';
+  if (!items.length) html += '<div class="mail-empty">' + (MAIL_FOLDER === 'mail' ? 'No mail.' : MAIL_FOLDER === 'sent' ? 'Nothing sent.' : 'No contract offers.') + '</div>';
+  items.forEach(function (it, i) {
+    var isUnread = it.kind === 'mail' && !it.read;
+    var who = it.kind === 'sent' ? it.to : it.from;
+    html += '<div class="mail-row mx-row' + (i === MAIL_SEL[MAIL_FOLDER] ? ' active' : '') + (isUnread ? ' unread' : '') + '" onclick="selectMailItem(' + i + ')">'
+      + mailAvatar(who)
+      + '<div class="mx-row__main">'
+      +   '<div class="mail-row-top"><span class="mail-sender">' + (it.important ? '<span class="mail-star">★</span>' : '')
+      +     (it.kind === 'sent' ? '<span class="mx-to">To </span>' : '') + BTG.esc(prettyTeamsIn(who)) + (it.kind === 'offer' ? ' → ' + BTG.esc(prettyTeam(it.to)) : '') + '</span>'
+      +     (it.status ? '<span class="mail-date">' + BTG.esc(it.status) + '</span>' : '')
+      +     (isUnread ? '<span class="unread-dot" title="Unread"></span>' : '')
+      +   '</div>'
+      +   '<div class="mail-subj">' + BTG.esc(it.subject) + '</div>'
+      +   '<div class="mail-body">' + BTG.esc(mailRest(it.body).replace(/\s+/g, ' ').slice(0, 90)) + '</div>'
+      + '</div></div>';
+  });
+  html += '</div>';
   if (role !== 'admin' && (DASH.blocked || []).length) {
-    html += '<div style="margin-top:14px;padding:0 4px;font-size:12px;color:var(--copy-faint);line-height:1.9;">'
-      + '<div style="text-transform:uppercase;letter-spacing:.08em;font-size:10px;margin-bottom:4px;">Blocked</div>'
+    html += '<div class="mx-blocked"><div class="mx-blocked__title">Blocked</div>'
       + DASH.blocked.map(function (n) {
-          return '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;"><span>' + BTG.esc(n) + '</span>'
-            + '<button class="modal-close" style="width:20px;height:20px;font-size:12px;" data-from="' + BTG.esc(n) + '" onclick="unblockMailSender(this.dataset.from)" title="Unblock">✕</button></div>';
-        }).join('')
-      + '</div>';
+          return '<div class="mx-blocked__row"><span>' + BTG.esc(n) + '</span>'
+            + '<button class="modal-close" data-from="' + BTG.esc(n) + '" onclick="unblockMailSender(this.dataset.from)" title="Unblock">✕</button></div>';
+        }).join('') + '</div>';
   }
   if (role === 'admin' && DASH.blockedMap) {
     var blockRows = Object.keys(DASH.blockedMap).map(function (n) {
       return (DASH.blockedMap[n] || []).map(function (b) { return BTG.esc(n) + ' blocks ' + BTG.esc(b); });
     }).reduce(function (a, b) { return a.concat(b); }, []);
     if (blockRows.length) {
-      html += '<div style="margin-top:14px;padding:0 4px;font-size:12px;color:var(--copy-faint);line-height:1.9;">'
-        + '<div style="text-transform:uppercase;letter-spacing:.08em;font-size:10px;margin-bottom:4px;">Blocked (all)</div>'
-        + blockRows.map(function (t) { return '<div>' + t + '</div>'; }).join('')
-        + '</div>';
+      html += '<div class="mx-blocked"><div class="mx-blocked__title">Blocked (all)</div>'
+        + blockRows.map(function (t) { return '<div class="mx-blocked__row">' + t + '</div>'; }).join('') + '</div>';
     }
   }
-  html += '</div>';
-
-  html += '<div class="mail-list">'
-    + '<div class="mail-toolbar">'
-    + '<select id="mail-sender-filter" onchange="MAIL_SENDER_FILTER=this.value;renderMailbox();">'
-    + '<option value="">All senders</option>'
-    + mailSenders.map(function (s) { return '<option value="' + BTG.esc(s) + '"' + (MAIL_SENDER_FILTER === s ? ' selected' : '') + '>' + BTG.esc(s) + '</option>'; }).join('')
-    + '</select>'
-    + '<input type="search" id="mail-search" placeholder="Search sender or message…" value="' + BTG.esc(MAIL_SEARCH) + '" oninput="onMailSearch(this)">'
-    + '<label class="mail-important-only"><input type="checkbox" ' + (MAIL_IMPORTANT_ONLY ? 'checked ' : '') + 'onchange="MAIL_IMPORTANT_ONLY=this.checked;renderMailbox()"> ★ only</label>'
-    + '</div>'
-    + '<div class="mail-list-head">' + (MAIL_FOLDER === 'mail' ? 'Mail' : MAIL_FOLDER === 'sent' ? 'Sent' : 'Contract offers') + '</div>';
-  if (!items.length) html += '<div class="mail-empty">' + (MAIL_FOLDER === 'mail' ? 'No mail.' : MAIL_FOLDER === 'sent' ? 'Nothing sent.' : 'No contract offers.') + '</div>';
-  items.forEach(function (it, i) {
-    var isUnread = it.kind === 'mail' && !it.read;
-    html += '<div class="mail-row ' + (i === MAIL_SEL[MAIL_FOLDER] ? 'active' : '') + (isUnread ? ' unread' : '') + '" onclick="selectMailItem(' + i + ')">'
-      + '<div class="mail-row-top"><span class="mail-sender">' + (it.important ? '<span class="mail-star">★</span>' : '') + (isUnread ? '<span class="unread-dot"></span>' : '') + BTG.esc(it.from) + (it.kind === 'offer' ? ' → ' + BTG.esc(it.to) : '') + '</span>'
-      + (it.status ? '<span class="mail-date">' + BTG.esc(it.status) + '</span>' : '') + '</div>'
-      + '<div class="mail-subj">' + BTG.esc(it.subject) + '</div>'
-      + '<div class="mail-body">' + BTG.esc((it.body || '').slice(0, 80)) + '</div>'
-      + '</div>';
-  });
   html += '</div>';
 
   html += '<div class="mail-read">';
   if (sel) {
     html += '<div class="read-subj">' + BTG.esc(sel.subject) + '</div>'
-      + '<div class="read-meta"><div class="read-avatar">' + BTG.esc((sel.from || '?').charAt(0)) + '</div>'
-      + '<div><div style="font-weight:600;color:var(--copy)">' + BTG.esc(sel.from) + ' → ' + BTG.esc(sel.to) + '</div>'
+      + '<div class="read-meta">' + mailAvatar(sel.from, 'mx-avatar--lg')
+      + '<div><div style="font-weight:700;color:var(--copy)">' + BTG.esc(prettyTeamsIn(sel.from)) + ' <span class="mx-arrow">→</span> ' + BTG.esc(prettyTeamsIn(sel.to)) + '</div>'
       + '<div style="font-size:12px;color:var(--copy-faint)">' + (sel.kind === 'offer' ? 'Contract offer' : 'Message') + '</div></div></div>'
-      + '<div class="read-body">' + BTG.esc(sel.body) + '</div>';
+      + '<div class="read-body">' + BTG.esc(mailRest(sel.body) || sel.body) + '</div>';
     if (sel.kind === 'offer') {
       var selOffer = offerByRow(sel.row);
       html += offerActionsHtml(selOffer || offers[sel.idx], role);
@@ -5834,8 +5853,8 @@ function renderMailbox() {
         + '<button class="action action-quiet action-compact" onclick="deleteMailItem(' + sel.row + ')"><span>Delete</span></button>'
         + (canBlock
            ? (isBlocked
-              ? '<button class="action action-quiet action-compact" data-from="' + BTG.esc(sel.from) + '" onclick="unblockMailSender(this.dataset.from)"><span>Unblock ' + BTG.esc(sel.from) + '</span></button>'
-              : '<button class="action action-quiet action-compact" data-from="' + BTG.esc(sel.from) + '" onclick="blockMailSender(this.dataset.from)"><span>Block ' + BTG.esc(sel.from) + '</span></button>')
+              ? '<button class="action action-quiet action-compact" data-from="' + BTG.esc(sel.from) + '" onclick="unblockMailSender(this.dataset.from)"><span>Unblock ' + BTG.esc(prettyTeamsIn(sel.from)) + '</span></button>'
+              : '<button class="action action-quiet action-compact" data-from="' + BTG.esc(sel.from) + '" onclick="blockMailSender(this.dataset.from)"><span>Block ' + BTG.esc(prettyTeamsIn(sel.from)) + '</span></button>')
            : '')
         + '</div>';
     }
@@ -5846,6 +5865,35 @@ function renderMailbox() {
 
   html += '</div>';
   root.innerHTML = html;
+}
+
+/* Message text without its first line (that line is shown as the subject). */
+function mailRest(body) {
+  var t = String(body || '');
+  var i = t.indexOf('\n');
+  return i === -1 ? '' : t.slice(i + 1).trim();
+}
+
+/* Mail avatar: BTG logo for officials, team logo for teams, photo for drivers, else initials. */
+function mailAvatar(name, extra) {
+  var n = String(name || '?').trim();
+  var cls = 'mx-avatar' + (extra ? ' ' + extra : '');
+  var low = n.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  if (/^btg ?officials$/i.test(n) || /^admin$/i.test(n)) return '<span class="' + cls + ' mx-avatar--logo"><img src="logos/BTG.png" alt=""></span>';
+  var data = null;
+  try { data = BTG.DBCache && BTG.DBCache.data ? BTG.DBCache.data() : null; } catch (e) {}
+  if (data) {
+    var team = (data.teams || []).filter(function (t) {
+      return String(t.team_key || '').toLowerCase().replace(/[^a-z0-9]+/g, '') === low || String(t.team_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '') === low;
+    })[0];
+    if (team && BTG.teamLogoImg) return '<span class="' + cls + ' mx-avatar--logo">' + BTG.teamLogoImg(team.team_key, team.series || 'F1', 26) + '</span>';
+    var drv = (data.drivers || []).filter(function (d) { return String(d.full_name || '').toLowerCase() === n.toLowerCase(); })[0];
+    if (drv && BTG.driverPhotoImg) return '<span class="' + cls + ' mx-avatar--photo">' + BTG.driverPhotoImg(drv.full_name, 40, '', CURRENT_YEAR) + '</span>';
+  }
+  var parts = n.split(/\s+/).filter(Boolean);
+  var ini = ((parts[0] || '?').charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase();
+  var hue = 0; for (var i = 0; i < n.length; i++) hue = (hue * 31 + n.charCodeAt(i)) % 360;
+  return '<span class="' + cls + '" style="background:hsl(' + hue + ' 45% 32%)">' + BTG.esc(ini) + '</span>';
 }
 
 function setMailFolder(f) { MAIL_FOLDER = f; MAIL_SEL[f] = MAIL_SEL[f] || 0; renderMailbox(); }
