@@ -1,0 +1,127 @@
+/* League licence card — three styles. */
+@font-face { font-family: 'BTG Signature'; src: url('../fonts/NothingYouCouldDo-Regular.ttf') format('truetype'); font-display: swap; }
+
+.lc { --lc-team: #e10600; --lc-team2: #fff; perspective: 1100px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+.lc-tilt { --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 50%; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; will-change: transform; width: 100%; }
+.lc-tilt.is-hover { transition: transform .08s linear; }
+.lc-card { position: relative; overflow: hidden; isolation: isolate; box-shadow: 0 18px 40px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.3); }
+.lc-shine { position: absolute; inset: 0; pointer-events: none; z-index: 20; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,.38), rgba(255,255,255,0) 45%); mix-blend-mode: soft-light; }
+.lc-tilt.is-hover .lc-shine { opacity: 1; }
+.lc-sig { font-family: 'BTG Signature', 'Segoe Script', 'Brush Script MT', cursive; font-size: 26px; line-height: 1; white-space: nowrap; transform: rotate(-4deg); display: inline-block; }
+.lc-barcode { display: block; }
+.lc-qr { display: block; width: 74px; height: 74px; border-radius: 4px; }
+.lc img { border-radius: 0 !important; }
+
+/* ── 1. Official ─────────────────────────────────────────────────────── */
+.lc--official .lc-tilt { max-width: 540px; }
+.lc--official .lc-card { aspect-ratio: 1.586; border-radius: 16px; color: #1b1b22;
+  background: linear-gradient(135deg, #f7f6f2 0%, #ecebe5 55%, #e2e0d8 100%); display: flex; flex-direction: column; }
+.lc-guilloche { position: absolute; inset: 0; z-index: -1; opacity: .55;
+  background:
+    repeating-radial-gradient(circle at 78% 120%, transparent 0 9px, color-mix(in oklab, var(--lc-team) 28%, transparent) 9px 10px),
+    repeating-radial-gradient(circle at 10% -30%, transparent 0 13px, rgba(0,0,0,.05) 13px 14px); }
+.lc-o-head { display: flex; align-items: center; gap: 12px; padding: 12px 18px; color: #fff;
+  background: linear-gradient(90deg, #15151e 0%, #15151e 55%, var(--lc-team) 100%); }
+.lc-o-head img { height: 22px; width: auto; }
+.lc-o-head div { display: flex; flex-direction: column; line-height: 1.15; }
+.lc-o-head b { font: 700 14px 'Formula1', sans-serif; text-transform: uppercase; }
+.lc-o-head span { font: 600 10px 'Titillium Web', sans-serif; letter-spacing: .16em; text-transform: uppercase; opacity: .75; }
+.lc-o-head em { margin-left: auto; font: 700 18px 'Formula1', sans-serif; font-style: normal; }
+.lc-o-body { flex: 1; display: flex; gap: 16px; padding: 14px 18px 4px; min-height: 0; }
+.lc-o-photo { width: 27%; aspect-ratio: .8; border-radius: 6px; overflow: hidden; flex: none; background: linear-gradient(180deg, #d9d7cf, #c2c0b8); box-shadow: inset 0 0 0 2px rgba(255,255,255,.7), 0 1px 3px rgba(0,0,0,.25); display: flex; align-items: flex-end; justify-content: center; }
+.lc-o-photo img { width: 100% !important; height: 100% !important; object-fit: cover; object-position: top; filter: saturate(.9) contrast(1.05); }
+.lc-o-fields { flex: 1; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; align-content: start; min-width: 0; }
+.lc-f { min-width: 0; }
+.lc-f.span2 { grid-column: span 2; }
+.lc-o-fields dt { font: 700 8.5px 'Titillium Web', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #6d6b66; }
+.lc-o-fields dd { margin: 1px 0 0; font: 700 13px 'Titillium Web', sans-serif; display: flex; align-items: center; gap: 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lc-o-fields dd img { flex: none; }
+.lc-o-name { font: 700 19px 'Formula1', sans-serif; text-transform: uppercase; }
+.lc-o-num { font: 700 17px 'Formula1', sans-serif; color: var(--lc-team); }
+.lc-f.mono dd { font-family: 'IBM Plex Mono', ui-monospace, monospace; letter-spacing: .04em; }
+.lc-o-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 4px 18px 14px; }
+.lc-o-sign { display: flex; flex-direction: column; min-width: 0; }
+.lc-o-sign .lc-sig { color: #1d2a6b; font-size: 28px; padding: 0 4px 2px; border-bottom: 1px solid rgba(0,0,0,.35); }
+.lc-o-sign small { font: 700 8px 'Titillium Web', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #6d6b66; margin-top: 3px; }
+.lc-o-foot .lc-barcode { width: 150px; height: 34px; flex: none; }
+.lc-o-seal { position: absolute; right: 22px; top: 60px; width: 62px; height: 62px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: conic-gradient(from 0deg, #ff8a8a, #ffe28a, #9dffb0, #8ad8ff, #c48aff, #ff8a8a); opacity: .55; mix-blend-mode: multiply;
+  -webkit-mask: radial-gradient(circle, #000 0 54%, transparent 55% 60%, #000 61%); mask: radial-gradient(circle, #000 0 54%, transparent 55% 60%, #000 61%); }
+.lc-o-seal span { font: 700 13px 'Formula1', sans-serif; color: #fff; }
+.lc-tilt.is-hover .lc-o-seal { filter: hue-rotate(calc(var(--ry) * 12)); }
+
+/* ── 2. Holo ─────────────────────────────────────────────────────────── */
+.lc--holo .lc-tilt { max-width: 540px; }
+.lc--holo .lc-card { aspect-ratio: 1.586; border-radius: 18px; color: #fff; background: #0d0d12; border: 1px solid rgba(255,255,255,.12); }
+.lc-h-carbon { position: absolute; inset: 0; z-index: -3;
+  background:
+    linear-gradient(45deg, rgba(255,255,255,.035) 25%, transparent 25% 50%, rgba(255,255,255,.035) 50% 75%, transparent 75%) 0 0/8px 8px,
+    linear-gradient(-45deg, rgba(0,0,0,.4) 25%, transparent 25% 50%, rgba(0,0,0,.4) 50% 75%, transparent 75%) 0 0/8px 8px, #15151b; }
+.lc-h-band { position: absolute; z-index: -2; top: -20%; bottom: -20%; right: 8%; width: 46%; transform: skewX(-16deg);
+  background: linear-gradient(180deg, var(--lc-team), color-mix(in oklab, var(--lc-team) 55%, #000)); box-shadow: -10px 0 0 color-mix(in oklab, var(--lc-team2) 85%, transparent); }
+.lc-h-bignum { position: absolute; z-index: -1; left: 46%; top: 8%; font: 700 170px/1 'Formula1', sans-serif; color: rgba(255,255,255,.12); letter-spacing: -.04em; }
+.lc-h-head { position: absolute; left: 22px; right: 22px; top: 18px; display: flex; align-items: center; gap: 10px; z-index: 3; }
+.lc-h-head img { height: 18px; width: auto; }
+.lc-h-head span { font: 700 10px 'Titillium Web', sans-serif; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.7); }
+.lc-h-logo { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,.45); display: inline-flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+.lc-h-logo img { width: 72% !important; height: 72% !important; object-fit: contain; }
+.lc-h-photo { position: absolute; right: 6%; bottom: 0; height: 88%; z-index: 2; display: flex; align-items: flex-end; transform: translateZ(40px); }
+.lc-h-photo img { height: 100% !important; width: auto !important; object-fit: contain; object-position: bottom; filter: drop-shadow(0 10px 16px rgba(0,0,0,.6)); }
+.lc-h-info { position: absolute; left: 22px; top: 62px; bottom: 18px; width: 46%; display: flex; flex-direction: column; z-index: 3; }
+.lc-h-role { align-self: flex-start; font: 700 10px 'Titillium Web', sans-serif; letter-spacing: .14em; text-transform: uppercase; background: var(--lc-team); padding: 3px 9px; border-radius: 4px; }
+.lc-h-name { margin-top: 10px; font: 400 22px/1.05 'Formula1', sans-serif; }
+.lc-h-name b { display: block; font: 700 30px/1 'Formula1 Wide', 'Formula1', sans-serif; text-transform: uppercase; }
+.lc-h-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; font: 700 12px 'Titillium Web', sans-serif; color: rgba(255,255,255,.85); }
+.lc-h-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.lc-h-bottom { margin-top: auto; display: flex; align-items: flex-end; gap: 14px; }
+.lc-h-bottom > div { flex: 1; min-width: 0; }
+.lc-h-bottom .lc-sig { color: #fff; opacity: .92; font-size: 26px; }
+.lc-h-no { margin-top: 6px; font: 500 10.5px 'IBM Plex Mono', ui-monospace, monospace; letter-spacing: .08em; color: rgba(255,255,255,.6); }
+.lc--holo .lc-qr { width: 62px; height: 62px; }
+.lc-foil { position: absolute; inset: 0; z-index: 10; pointer-events: none; mix-blend-mode: overlay; opacity: .1; transition: opacity .3s;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,122,217,.8) 40%, rgba(122,241,255,.8) 46%, rgba(255,233,122,.8) 52%, transparent 62%);
+  background-size: 250% 250%; background-position: var(--mx) var(--my); }
+.lc-tilt.is-hover .lc-foil { opacity: .55; }
+
+/* ── 3. Paddock pass ─────────────────────────────────────────────────── */
+.lc--pass .lc-lanyard { width: 34px; height: 46px; margin-bottom: -10px; border-radius: 4px 4px 0 0;
+  background: repeating-linear-gradient(90deg, var(--lc-team) 0 6px, color-mix(in oklab, var(--lc-team) 70%, #000) 6px 7px); box-shadow: 0 2px 6px rgba(0,0,0,.4); position: relative; z-index: 1; }
+.lc--pass .lc-lanyard::after { content: ""; position: absolute; left: 50%; bottom: 2px; width: 18px; height: 18px; transform: translateX(-50%); border-radius: 50%; border: 3px solid #b9bcc4; background: transparent; }
+.lc--pass .lc-tilt { max-width: 310px; }
+.lc--pass .lc-card { border-radius: 16px; background: #fff; color: #15151e; display: flex; flex-direction: column; align-items: stretch; padding-bottom: 14px; }
+.lc-p-slot { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); width: 54px; height: 9px; border-radius: 6px; background: #15151e; box-shadow: inset 0 2px 3px rgba(0,0,0,.6); z-index: 4; }
+.lc-p-head { display: flex; align-items: center; gap: 10px; padding: 30px 16px 14px; color: #fff; background: linear-gradient(160deg, var(--lc-team), color-mix(in oklab, var(--lc-team) 55%, #000)); }
+.lc-p-head img { height: 18px; width: auto; }
+.lc-p-head div { display: flex; flex-direction: column; line-height: 1.15; }
+.lc-p-head b { font: 700 14px 'Formula1', sans-serif; text-transform: uppercase; }
+.lc-p-head span { font: 700 10px 'Titillium Web', sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+.lc-p-logo { margin-left: auto; width: 38px; height: 38px; border-radius: 50%; background: rgba(0,0,0,.35); display: inline-flex; align-items: center; justify-content: center; }
+.lc-p-logo img { width: 72% !important; height: 72% !important; object-fit: contain; }
+.lc-p-photo { position: relative; margin: -2px 18px 0; aspect-ratio: 1; border-radius: 0 0 12px 12px; overflow: hidden; display: flex; align-items: flex-end; justify-content: center;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--lc-team) 55%, #000), color-mix(in oklab, var(--lc-team) 25%, #f2f2f2)); }
+.lc-p-photo img { height: 100% !important; width: auto !important; object-fit: contain; object-position: bottom; }
+.lc-p-num { position: absolute; left: 10px; top: 6px; font: 700 40px/1 'Formula1', sans-serif; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
+.lc-p-name { padding: 12px 18px 0; font: 400 18px/1.05 'Formula1', sans-serif; }
+.lc-p-name b { display: block; font: 700 26px/1 'Formula1 Wide', 'Formula1', sans-serif; text-transform: uppercase; }
+.lc-p-meta { padding: 6px 18px 0; font: 700 12px 'Titillium Web', sans-serif; color: #55555e; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.lc-p-role { margin: 12px 0 0; padding: 7px 18px; font: 700 18px 'Formula1', sans-serif; z-index: 0; isolation: isolate; white-space: nowrap; overflow: hidden; text-transform: uppercase; letter-spacing: .04em; color: #fff; background: #15151e; position: relative; }
+.lc-p-role::after { content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 22%; z-index: -1; background: linear-gradient(105deg, transparent 0 18%, var(--lc-team) 18%); }
+.lc-p-zones { display: flex; align-items: center; gap: 6px; padding: 10px 18px 0; }
+.lc-p-zones span { width: 26px; height: 26px; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font: 700 13px 'Formula1', sans-serif; color: #fff; background: var(--lc-team); }
+.lc-p-zones span:nth-child(2n) { background: #15151e; }
+.lc-p-zones small { margin-left: auto; font: 700 9px 'Titillium Web', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #8a8a92; }
+.lc-p-foot { padding: 8px 18px 0; display: flex; flex-direction: column; align-items: stretch; gap: 4px; }
+.lc-p-foot .lc-sig { color: #1d2a6b; font-size: 24px; align-self: flex-start; }
+.lc-p-foot .lc-barcode { width: 100%; height: 30px; }
+.lc-p-no { font: 500 10px 'IBM Plex Mono', ui-monospace, monospace; letter-spacing: .12em; text-align: center; color: #55555e; }
+
+@media (max-width: 560px) {
+  .lc--official .lc-card, .lc--holo .lc-card { aspect-ratio: auto; }
+  .lc-o-body { flex-direction: column; }
+  .lc-o-photo { width: 110px; }
+  .lc--holo .lc-card { min-height: 300px; }
+  .lc-h-name b { font-size: 24px; }
+  .lc-h-bignum { font-size: 120px; }
+}
+@media (prefers-reduced-motion: reduce) { .lc-tilt { transform: none !important; } }

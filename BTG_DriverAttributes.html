@@ -572,7 +572,8 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
 <link rel="stylesheet" href="css/radio-card.css">
 <link rel="stylesheet" href="css/dashboard-radio.css?v=container-preview-2">
 <link rel="stylesheet" href="css/f1-theme.css?v=8">
-<link rel="stylesheet" href="css/dashboard-f1.css?v=7">
+<link rel="stylesheet" href="css/dashboard-f1.css?v=8">
+<link rel="stylesheet" href="css/licence-card.css?v=2">
 </head>
 <body data-page="dashboard">
 
@@ -1661,6 +1662,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
 <script src="js/notification-sounds.js"></script>
 <script src="js/parts-design.js"></script>
 <script src="js/contract-workflows.js"></script>
+<script src="js/licence-card.js?v=1"></script>
 <script>
 /* ============================================================
    CONFIG
@@ -2650,33 +2652,38 @@ function renderDriverOverview() {
   setMasthead(d.driver, (team ? team + ' · ' : '') + 'Driver');
 }
 
-/* Account tab: league licence card for whoever is logged in. */
+/* Account tab: paddock-pass licence for whoever is logged in. */
 function renderAccountLicence() {
   var el = document.getElementById('acct-licence');
-  if (!el || !CURRENT_USER) return;
+  if (!el || !CURRENT_USER || !BTG.LicenceCard) return;
   var role = CURRENT_USER.role;
-  var name = CURRENT_USER.username, teamKey = '', roleLbl = 'Member', series = '';
-  if (role === 'driver' && SELECTED) { name = SELECTED.driver; teamKey = SELECTED.team || ''; roleLbl = 'Race driver'; series = SELECTED.series || ''; }
-  else if (role === 'tp') { name = (DASH && DASH.tp && DASH.tp.name) || CURRENT_USER.username; teamKey = selectedTpTeam ? (selectedTpTeam() || '') : ''; roleLbl = 'Team Principal'; }
-  else if (role === 'admin') roleLbl = 'League administrator';
+  var name = CURRENT_USER.username, teamKey = '', roleLbl = 'Member', series = '', nation = '', number = '', isDriver = false;
+  if (role === 'driver' && SELECTED) { name = SELECTED.driver; teamKey = SELECTED.team || ''; roleLbl = 'Race driver'; series = SELECTED.series || ''; nation = SELECTED.nation || ''; number = SELECTED.number || ''; isDriver = true; }
+  else if (role === 'tp') { name = (DASH && DASH.tp && DASH.tp.name) || CURRENT_USER.username; teamKey = selectedTpTeam() || ''; roleLbl = 'Team Principal'; }
+  else if (role === 'admin') roleLbl = 'Race control';
   else if (role === 'seriesrunner') roleLbl = 'Series runner';
-  var team = teamKey ? prettyTeam(teamKey) : '';
   var trow = teamRowFor(teamKey);
-  var photo = (role === 'driver' && BTG.driverPhotoImg) ? BTG.driverPhotoImg(name, 120, '', CURRENT_YEAR) : '';
-  el.style.setProperty('--ct-team', teamColorFor(teamKey));
-  el.innerHTML = '<div class="lic">'
-    + '<div class="lic__top"><img src="logos/BTG.png" alt="BTG"><span>League licence</span><em>' + BTG.esc(CURRENT_YEAR || '') + '</em></div>'
-    + '<div class="lic__body">'
-    +   '<div class="lic__pic">' + (photo || mailAvatar(name, 'lic__ini')) + '</div>'
-    +   '<dl>'
-    +     '<div><dt>Holder</dt><dd class="lic__name">' + BTG.esc(name) + '</dd></div>'
-    +     '<div><dt>Role</dt><dd>' + BTG.esc(roleLbl) + '</dd></div>'
-    +     (team ? '<div><dt>Team</dt><dd class="lic__team">' + (trow && BTG.teamLogoImg ? BTG.teamLogoImg(trow.team_key, trow.series || 'F1', 18) : '') + BTG.esc(team) + '</dd></div>' : '')
-    +     '<div><dt>Username</dt><dd>' + BTG.esc(CURRENT_USER.username) + '</dd></div>'
-    +   '</dl>'
-    + '</div>'
-    + '<div class="lic__stripe"></div>'
-    + '</div>';
+  if (!series && trow) series = trow.series || '';
+  var drow = null;
+  try { drow = ((BTG.DBCache.data() || {}).drivers || []).filter(function (x) { return String(x.full_name).toLowerCase() === String(name).toLowerCase(); })[0] || null; } catch (e) {}
+  if (isDriver && !number && drow) number = drow.driver_number || '';
+  if (isDriver && !nation && drow) nation = drow.nation || '';
+  var idPart = drow ? String(drow.driver_id) : String(Math.abs(Array.from(String(CURRENT_USER.username)).reduce(function (h, c) { return (h * 31 + c.charCodeAt(0)) | 0; }, 7)) % 10000);
+  while (idPart.length < 4) idPart = '0' + idPart;
+  var yy = String(CURRENT_YEAR || new Date().getFullYear()).slice(-2);
+  var cat = isDriver ? (series || 'BTG') : (role === 'tp' ? 'TP' : (role === 'admin' ? 'RC' : 'SR'));
+  var parts = String(name).trim().split(/\s+/);
+  var c2 = (trow && trow.color_secondary) || '#ffffff';
+  el.innerHTML = BTG.LicenceCard.render('pass', {
+    name: name, first: parts.length > 1 ? parts.slice(0, -1).join(' ') : '', last: parts[parts.length - 1] || name,
+    role: roleLbl, isDriver: isDriver, category: cat, team: teamKey ? prettyTeam(teamKey) : '', nation: nation, number: number,
+    year: CURRENT_YEAR || new Date().getFullYear(), licNo: 'BTG-' + cat + '-' + idPart + '-' + yy,
+    color: teamColorFor(teamKey), color2: c2,
+    photoHtml: isDriver && BTG.driverPhotoImg ? BTG.driverPhotoImg(name, 300, '', CURRENT_YEAR) : mailAvatar(name, 'lc-ini'),
+    flagHtml: nation && BTG.flagImg ? BTG.flagImg(nation, 20, 14) : '',
+    teamLogoHtml: trow && BTG.teamLogoImg ? BTG.teamLogoImg(trow.team_key, trow.series || 'F1', 22) : ''
+  });
+  BTG.LicenceCard.bindTilt(el);
 }
 
 /* Masthead: who is logged in instead of "Dashboard | Dashboard". */
