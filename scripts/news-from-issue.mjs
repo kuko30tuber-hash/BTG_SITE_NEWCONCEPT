@@ -104,7 +104,7 @@ async function main() {
   }
 
   await saveArticle(NEWS_DIR, slug, art, files, date, { source: 'issue', issue: issue.number });
-  log('✓', slug, '—', art.title, `(${files.length} image(s))`);
+  log('OK', slug, '—', art.title, `(${files.length} image(s))`);
   if (process.env.GITHUB_OUTPUT) {
     await fs.appendFile(process.env.GITHUB_OUTPUT, `slug=${slug}\ntitle=${String(art.title).replace(/\n/g, ' ')}\nimages=${files.length}\nwanted=${images.length}\n`);
   }

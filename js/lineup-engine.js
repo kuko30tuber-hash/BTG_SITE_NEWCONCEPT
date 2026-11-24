@@ -1,6 +1,17 @@
 // Shared v17 lineup engine, extracted from the supplied source.
 
 const $=s=>document.querySelector(s);
+/* Nation → flag image (Flags/xx.svg); accepts ISO-2 ("NO"), IOC ("GBR") or a flag emoji.
+   Falls back to a neutral flag icon when no flag exists. */
+window.btgNationFlag=window.btgNationFlag||function(n){
+  let s=String(n==null?'':n).trim(),a2='';
+  const cps=Array.from(s).map(c=>c.codePointAt(0));
+  if(cps.length===2&&cps.every(c=>c>=0x1F1E6&&c<=0x1F1FF))a2=cps.map(c=>String.fromCharCode(c-0x1F1E6+97)).join('');
+  else if(/^[A-Za-z]{2}$/.test(s))a2=s.toLowerCase();
+  else if(/^[A-Za-z]{3}$/.test(s)&&window.BTG&&BTG.flagImg){const m=/src="([^"]+)"/.exec(BTG.flagImg(s.toUpperCase(),24,16)||'');if(m)return `<img src="${m[1]}" alt="">`;}
+  if(a2)return `<img src="Flags/${a2}.svg" alt="">`;
+  return '<svg class="ic ic-flag" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>';
+};
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const lum=h=>{const n=parseInt(h.slice(1),16),f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(n>>16)+.7152*f(n>>8&255)+.0722*f(n&255)};
 const shade=(h,a)=>{const n=parseInt(h.slice(1),16),f=v=>Math.round(a<0?v*(1+a):v+(255-v)*a);return '#'+[n>>16,n>>8&255,n&255].map(v=>f(v).toString(16).padStart(2,'0')).join('')};
@@ -11,17 +22,17 @@ const F1=[
  {c:'#0e6b58',n:['Vettel','Stroll']},{c:'#1c2b52',n:['Ocon','Alonso']},{c:'#e30613',n:['Leclerc','Sainz']},
  {c:'#27345e',n:['Gasly','Tsunoda']},{c:'#8d1b2c',n:['Bottas','Zhou']},{c:'#e2142d',n:['Magnussen','Schumacher']},{c:'#3a9ddb',n:['Albon','Latifi']}];
 const F2=[
- {team:'PREMA RACING',c:'#e21823',n:['Hauger','Daruvala'],f:['Dennis','Jehan'],r:[1,0],flags:['🇳🇴','🇮🇳']},
- {team:'VIRTUOSI RACING',c:'#0076ac',n:['Doohan','Sato'],f:['Jack','Marino'],r:[1,0],flags:['🇦🇺','🇯🇵']},
- {team:'CARLIN',c:'#14298e',n:['Lawson','Sargeant'],f:['Liam','Logan'],r:[1,1],flags:['🇳🇿','🇺🇸']},
- {team:'HITECH GRAND PRIX',c:'#242a53',n:['Armstrong','Vips'],f:['Marcus','Jüri'],flags:['🇳🇿','🇪🇪']},
- {team:'ART GRAND PRIX',c:'#21252d',n:['Vesti','Pourchaire'],f:['Frederik','Théo'],r:[1,0],flags:['🇩🇰','🇫🇷']},
- {team:'MP MOTORSPORT',c:'#fa2639',n:['Drugovich','Novalak'],f:['Felipe','Clément'],r:[0,1],flags:['🇧🇷','🇫🇷']},
- {team:'CAMPOS RACING',c:'#c61222',n:['Caldwell','Boschung'],f:['Olli','Ralph'],r:[1,0],flags:['🇬🇧','🇨🇭']},
- {team:'DAMS',c:'#073d83',n:['Nissany','Iwasa'],f:['Roy','Ayumu'],r:[0,1],flags:['🇮🇱','🇯🇵']},
- {team:'TRIDENT',c:'#6726bf',n:['Verschoor','Williams'],f:['Richard','Calan'],r:[0,1],flags:['🇳🇱','🇦🇺']},
- {team:'CHAROUZ',c:'#ea1732',n:['Fittipaldi','Bolukbasi'],f:['Enzo','Cem'],r:[0,1],flags:['🇧🇷','🇹🇷']},
- {team:'VAN AMERSFOORT RACING',c:'#ff761d',n:['Hughes','Cordeel'],f:['Jake','Amaury'],flags:['🇬🇧','🇧🇪']}
+ {team:'PREMA RACING',c:'#e21823',n:['Hauger','Daruvala'],f:['Dennis','Jehan'],r:[1,0],flags:['NO','IN']},
+ {team:'VIRTUOSI RACING',c:'#0076ac',n:['Doohan','Sato'],f:['Jack','Marino'],r:[1,0],flags:['AU','JP']},
+ {team:'CARLIN',c:'#14298e',n:['Lawson','Sargeant'],f:['Liam','Logan'],r:[1,1],flags:['NZ','US']},
+ {team:'HITECH GRAND PRIX',c:'#242a53',n:['Armstrong','Vips'],f:['Marcus','Jüri'],flags:['NZ','EE']},
+ {team:'ART GRAND PRIX',c:'#21252d',n:['Vesti','Pourchaire'],f:['Frederik','Théo'],r:[1,0],flags:['DK','FR']},
+ {team:'MP MOTORSPORT',c:'#fa2639',n:['Drugovich','Novalak'],f:['Felipe','Clément'],r:[0,1],flags:['BR','FR']},
+ {team:'CAMPOS RACING',c:'#c61222',n:['Caldwell','Boschung'],f:['Olli','Ralph'],r:[1,0],flags:['GB','CH']},
+ {team:'DAMS',c:'#073d83',n:['Nissany','Iwasa'],f:['Roy','Ayumu'],r:[0,1],flags:['IL','JP']},
+ {team:'TRIDENT',c:'#6726bf',n:['Verschoor','Williams'],f:['Richard','Calan'],r:[0,1],flags:['NL','AU']},
+ {team:'CHAROUZ',c:'#ea1732',n:['Fittipaldi','Bolukbasi'],f:['Enzo','Cem'],r:[0,1],flags:['BR','TR']},
+ {team:'VAN AMERSFOORT RACING',c:'#ff761d',n:['Hughes','Cordeel'],f:['Jake','Amaury'],flags:['GB','BE']}
 ];
 const F3=[
  {c:'#c8102e',n:['Badoer','Leon','Ugochukwu'],r:[1,0,1]},{c:'#6a2fa8',n:['Stromsted','Camara','Wurz'],r:[1,0,0]},
@@ -194,12 +205,12 @@ function renderFE12(b){
 
 
 /* ===== Super Formula 2024/2026 examples, based on the supplied graphics ===== */
-const sfItem=(num,name,teamName,nation='🇯🇵',first='')=>({num,name,first,teamName,nation});
+const sfItem=(num,name,teamName,nation='JP',first='')=>({num,name,first,teamName,nation});
 const SF24_DRIVERS=[
  sfItem(3,'Kenta Yamashita','KONDO RACING'),sfItem(14,'Kazuya Oshima','docomo business ROOKIE'),sfItem(38,'Sena Sakaguchi','VERTEX PARTNERS CERUMO-INGING'),
  sfItem(4,'Kazuto Kotaka','KONDO RACING'),sfItem(15,'Ayumu Iwasa','TEAM MUGEN'),sfItem(39,'Toshiki Oyu','VERTEX PARTNERS CERUMO-INGING'),
  sfItem(5,'Tadasuke Makino','DOCOMO TEAM DANDELION'),sfItem(16,'Tomoki Nojiri','TEAM MUGEN'),sfItem(50,'Iori Kimura','San-Ei Gen with B-Max'),
- sfItem(6,'Kakunoshin Ohta','DOCOMO TEAM DANDELION'),sfItem(19,'Théo Pourchaire','ITOCHU ENEX TEAM IMPUL','🇫🇷'),sfItem(53,'Juju','TGM Grand Prix'),
+ sfItem(6,'Kakunoshin Ohta','DOCOMO TEAM DANDELION'),sfItem(19,'Théo Pourchaire','ITOCHU ENEX TEAM IMPUL','FR'),sfItem(53,'Juju','TGM Grand Prix'),
  sfItem(7,'Kamui Kobayashi','Kids com Team KCMG'),sfItem(20,'Yuji Kunimoto','ITOCHU ENEX TEAM IMPUL'),sfItem(55,'Nobuharu Matsushita','TGM Grand Prix'),
  sfItem(8,'Nirei Fukuzumi','Kids com Team KCMG'),sfItem(36,'Sho Tsuboi','VANTELIN TEAM TOM’S'),sfItem(64,'Naoki Yamamoto','PONOS NAKAJIMA RACING'),
  sfItem(12,'Atsushi Miyake','ThreeBond Racing'),sfItem(37,'Ukyo Sasahara','VANTELIN TEAM TOM’S'),sfItem(65,'Ren Sato','PONOS NAKAJIMA RACING'),
@@ -207,20 +218,20 @@ const SF24_DRIVERS=[
 ];
 // Column-major reference order interleaved into two-driver rows for the editor.
 const SF26_LEFT=[
- sfItem(1,'Ayumu IWASA','TEAM MUGEN AUTOBACS','🇯🇵','岩佐 歩夢'),sfItem(16,'Tomoki NOJIRI','TEAM MUGEN AUTOBACS','🇯🇵','野尻 智紀'),
- sfItem(3,'Luke BROWNING','REALIZE KONDO RACING','🇬🇧','ルーク・ブラウニング'),sfItem(4,'Ukyo SASAHARA','REALIZE KONDO RACING','🇯🇵','笹原 右京'),
- sfItem(5,'Tadasuke MAKINO','DOCOMO TEAM DANDELION','🇯🇵','牧野 任祐'),sfItem(6,'Kakunoshin OHTA','DOCOMO TEAM DANDELION','🇯🇵','太田 格之進'),
- sfItem(7,'Kamui KOBAYASHI','KDDI TGMGP TGR-DC','🇯🇵','小林 可夢偉'),sfItem(28,'Rikuto KOBAYASHI','KDDI TGMGP TGR-DC','🇯🇵','小林 利徠斗'),
- sfItem(8,'Kenta YAMASHITA','KCMG','🇯🇵','山下 健太'),sfItem(69,'Kalle ROVANPERÄ','KCMG','🇫🇮','カッレ・ロバンペラ'),
- sfItem(10,'JUJU','HAZAMA ANDO Triple Tree Racing','🇯🇵','ジュジュ'),sfItem(12,'Syun KOIDE','ThreeBond Racing','🇯🇵','小出 峻')
+ sfItem(1,'Ayumu IWASA','TEAM MUGEN AUTOBACS','JP','岩佐 歩夢'),sfItem(16,'Tomoki NOJIRI','TEAM MUGEN AUTOBACS','JP','野尻 智紀'),
+ sfItem(3,'Luke BROWNING','REALIZE KONDO RACING','GB','ルーク・ブラウニング'),sfItem(4,'Ukyo SASAHARA','REALIZE KONDO RACING','JP','笹原 右京'),
+ sfItem(5,'Tadasuke MAKINO','DOCOMO TEAM DANDELION','JP','牧野 任祐'),sfItem(6,'Kakunoshin OHTA','DOCOMO TEAM DANDELION','JP','太田 格之進'),
+ sfItem(7,'Kamui KOBAYASHI','KDDI TGMGP TGR-DC','JP','小林 可夢偉'),sfItem(28,'Rikuto KOBAYASHI','KDDI TGMGP TGR-DC','JP','小林 利徠斗'),
+ sfItem(8,'Kenta YAMASHITA','KCMG','JP','山下 健太'),sfItem(69,'Kalle ROVANPERÄ','KCMG','FI','カッレ・ロバンペラ'),
+ sfItem(10,'JUJU','HAZAMA ANDO Triple Tree Racing','JP','ジュジュ'),sfItem(12,'Syun KOIDE','ThreeBond Racing','JP','小出 峻')
 ];
 const SF26_RIGHT=[
- sfItem(14,'Nirei FUKUZUMI','NTT docomo Business ROOKIE','🇯🇵','福住 仁嶺'),sfItem(19,"Zak O’SULLIVAN",'TEAM IMPUL','🇬🇧','ザック・オサリバン'),
- sfItem(22,'Nobuharu MATSUSHITA','DELIGHTWORKS RACING','🇯🇵','松下 信治'),sfItem(36,'Sho TSUBOI',"VANTELIN TEAM TOM’S",'🇯🇵','坪井 翔'),
- sfItem(37,'Sacha FENESTRAZ',"VANTELIN TEAM TOM’S",'🇦🇷','サッシャ・フェネストラズ'),sfItem(38,'Sena SAKAGUCHI','SANKI VERTEX CERUMO-INGING','🇯🇵','阪口 晴南'),
- sfItem(39,'Toshiki OYU','SANKI VERTEX CERUMO-INGING','🇯🇵','大湯 都史樹'),sfItem(50,'Yuto NOMURA','San-Ei Gen with B-Max','🇯🇵','野村 勇斗'),
- sfItem(53,'Charlie WURZ','TEAM GOH','🇦🇹','チャーリー・ブルツ'),sfItem(64,'Ren SATO','PONOS NAKAJIMA RACING','🇯🇵','佐藤 蓮'),
- sfItem(65,'Igor Omura FRAGA','PONOS NAKAJIMA RACING','🇧🇷','イゴール・大村・フラガ'),sfItem(97,'Roman STANĚK','Buzz MK Racing','🇨🇿','ロマン・スタネック')
+ sfItem(14,'Nirei FUKUZUMI','NTT docomo Business ROOKIE','JP','福住 仁嶺'),sfItem(19,"Zak O’SULLIVAN",'TEAM IMPUL','GB','ザック・オサリバン'),
+ sfItem(22,'Nobuharu MATSUSHITA','DELIGHTWORKS RACING','JP','松下 信治'),sfItem(36,'Sho TSUBOI',"VANTELIN TEAM TOM’S",'JP','坪井 翔'),
+ sfItem(37,'Sacha FENESTRAZ',"VANTELIN TEAM TOM’S",'AR','サッシャ・フェネストラズ'),sfItem(38,'Sena SAKAGUCHI','SANKI VERTEX CERUMO-INGING','JP','阪口 晴南'),
+ sfItem(39,'Toshiki OYU','SANKI VERTEX CERUMO-INGING','JP','大湯 都史樹'),sfItem(50,'Yuto NOMURA','San-Ei Gen with B-Max','JP','野村 勇斗'),
+ sfItem(53,'Charlie WURZ','TEAM GOH','AT','チャーリー・ブルツ'),sfItem(64,'Ren SATO','PONOS NAKAJIMA RACING','JP','佐藤 蓮'),
+ sfItem(65,'Igor Omura FRAGA','PONOS NAKAJIMA RACING','BR','イゴール・大村・フラガ'),sfItem(97,'Roman STANĚK','Buzz MK Racing','CZ','ロマン・スタネック')
 ];
 const sfTeams=list=>Array.from({length:Math.ceil(list.length/2)},(_,i)=>{
  const p=list.slice(i*2,i*2+2);return{c:'#087d5e',team:p[0]?.teamName||`Super Formula ${i+1}`,f:p.map(x=>x.first),n:p.map(x=>x.name),nums:p.map(x=>x.num),entries:p};
@@ -273,7 +284,7 @@ const sfEntry=(i,j)=>{
  return `<div class="sf-slot" data-team-index="${i}" data-driver-index="${j}"><div class="sf-card" style="--c:${t.c}">
  <div class="sf-num num" contenteditable="true" spellcheck="false" data-t="${i}" data-d="${j}">${esc(num)}</div>
  <div class="sf-face" role="button" tabindex="0" data-k="img" data-t="${i}" data-d="${j}" aria-label="Upload portrait for ${esc(p.name)}">${p.img?`<img src="${p.img}" alt="">`:SIL}</div>
- ${S.opts.flag?`<div class="sf-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag">${p.flag?`<img src="${p.flag}" alt="">`:esc(p.nation||'🇯🇵')}</div>`:''}
+ ${S.opts.flag?`<div class="sf-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag">${p.flag?`<img src="${p.flag}" alt="">`:btgNationFlag(p.nation)}</div>`:''}
  <div class="sf-data"><span class="t" contenteditable="true" spellcheck="false" data-t="${i}" data-d="${j}">${esc(p.name)}</span><span class="f" contenteditable="true" spellcheck="false" data-t="${i}" data-d="${j}">${esc(p.first||'')}</span></div>
  <div class="sf-emblem lg" role="button" tabindex="0" data-k="driverlogo" data-t="${i}" data-d="${j}" aria-label="Upload driver's team logo">${p.logo?`<img src="${p.logo}" alt="">`:`<span class="box">${LOGO}<span class="drvteam" contenteditable="true" spellcheck="false" data-t="${i}" data-d="${j}">${esc(indiv)}</span></span>`}</div>
  <input class="cp" type="color" value="${t.c}" data-t="${i}" aria-label="Team color"></div>${rook(i,j,p)}</div>`;
@@ -354,7 +365,7 @@ function loadPreset(p){
   S.teams=Array.from({length:14},(_,i)=>{const r=D[i];
     return{c:r?r.c:EXTRA[(i-D.length+EXTRA.length*5)%4],team:r?.team||'TEAM '+(i+1),trim:r?.trim||null,logo:null,cnt:r?.cnt||0,
       dr:[0,1,2,3].map(j=>({name:r?.n?.[j]||'Driver '+(j+1),first:r?.f?.[j]||(ind||isFE?'First':''),img:null,flag:null,num:r?.nums?.[j]??null,rookie:!!r?.r?.[j],
-        nation:r?.flags?.[j]||r?.entries?.[j]?.nation||'🏁',teamName:r?.entries?.[j]?.teamName||r?.team||'TEAM',logo:null}))}});
+        nation:r?.flags?.[j]||r?.entries?.[j]?.nation||'',teamName:r?.entries?.[j]?.teamName||r?.team||'TEAM',logo:null}))}});
   if(fox){
     const order=[1,6,3,5,9,7,0,8,2,10,4], originals=S.teams.slice();
     S.teams=order.map(i=>originals[i]).concat(originals.slice(11));
@@ -526,7 +537,7 @@ function decorateOptions(b){
       el.dataset.k='flag';el.dataset.t=i;el.dataset.d=j;
       el.setAttribute('aria-label','Upload driver flag');
       if(p.flag){const img=document.createElement('img');img.src=p.flag;img.alt='';el.append(img)}
-      else el.textContent=p.nation||'⚑';
+      else el.innerHTML=btgNationFlag(p.nation);
       photo.append(el);
     }
     if(S.opts.rookie&&!matching('[data-k="rookie"][data-t][data-d]')){
@@ -973,7 +984,7 @@ function mixSeriesTitle(withLogo=true){
 function mixDriver(i,j){
  const t=S.teams[i],p=t.dr[j],frame=mixDriverStyle(i,j),number=p.num??(i*S.d+j+1);
  const hasFirst=!!(p.first&&p.first!=='First');
- const flag=S.opts.flag?`<span class="mix-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload driver flag">${p.flag?`<img src="${p.flag}" alt="">`:mixText(p.nation||'🏁')}</span>`:'';
+ const flag=S.opts.flag?`<span class="mix-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload driver flag">${p.flag?`<img src="${p.flag}" alt="">`:btgNationFlag(p.nation)}</span>`:'';
  const num=S.opts.num?`<span class="mix-num num" contenteditable="true" spellcheck="false" data-t="${i}" data-d="${j}">${mixText(number)}</span>`:'';
  return `<div class="mix-driver frame-${frame}" data-driver="${j}" data-frame="${frame}" data-t="${i}" data-d="${j}">
   <div class="mix-photo" role="button" tabindex="0" data-k="img" data-t="${i}" data-d="${j}" aria-label="Upload ${mixText(p.name)} photo">${p.img?`<img src="${p.img}" alt="">`:SIL}</div>
@@ -1086,7 +1097,7 @@ function renderF2(b){
    for(let j=0;j<d;j++){
      const p=t.dr[j],num=p.num??(i*4+j+1);
      const rtag=S.opts.rookie?`<button class="rk f2-rookie${p.rookie?' on':''}" type="button" data-k="rookie" data-t="${i}" data-d="${j}" aria-label="${p.rookie?'Remove rookie status':'Mark as rookie'}: ${esc(p.name)}" aria-pressed="${!!p.rookie}" title="${p.rookie?'Remove rookie status':'Mark as rookie'}">${p.rookie?'ROOKIE':'+'}</button>`:'';
-     const flag=S.opts.flag?`<span class="f2-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag for ${esc(p.name)}">${p.flag?`<img src="${p.flag}" alt="">`:`<span>${esc(p.nation||'🏁')}</span>`}</span>`:'';
+     const flag=S.opts.flag?`<span class="f2-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag for ${esc(p.name)}">${p.flag?`<img src="${p.flag}" alt="">`:`<span>${btgNationFlag(p.nation)}</span>`}</span>`:'';
      drivers+=`<div class="f2-driver" data-t="${i}" data-d="${j}" style="--c:${palette[j]};--ink:${tc(palette[j])}">
        <div class="f2-face ph" role="button" tabindex="0" data-k="img" data-t="${i}" data-d="${j}" aria-label="Upload portrait for ${esc(p.name)}">${p.img?`<img src="${p.img}" alt="">`:SIL}</div>
        <div class="f2-label">${flag}<span class="t" ${editable} data-t="${i}" data-d="${j}">${esc(p.name)}</span></div>
@@ -1252,7 +1263,7 @@ function hcGivenName(p){
 function hcDriver(i,j,frame){
  const t=S.teams[i],p=t.dr[j];
  const number=p.num??(i*4+j+1),first=hcGivenName(p);
- const flag=S.opts.flag?`<span class="hc-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag">${p.flag?`<img src="${p.flag}" alt="">`:esc(p.nation||'⚑')}</span>`:'';
+ const flag=S.opts.flag?`<span class="hc-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag">${p.flag?`<img src="${p.flag}" alt="">`:btgNationFlag(p.nation)}</span>`:'';
  const num=S.opts.num?`<span class="hc-number num" contenteditable="true" spellcheck="false" data-t="${i}" data-d="${j}">${esc(number)}</span>`:'';
  const rookie=S.opts.rookie?`<button class="rk hc-rookie ${p.rookie?'on':''}" data-k="rookie" data-t="${i}" data-d="${j}" type="button" title="Toggle rookie status" aria-pressed="${!!p.rookie}">${p.rookie?'ROOKIE':'+'}</button>`:'';
  const teamPlate=hcUseTeamColor(i,'mixUseTeamPlate','mixTeamPlateOverrides');

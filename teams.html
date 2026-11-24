@@ -1095,9 +1095,9 @@ a.tm-chip:hover { border-color: #fff; color: #fff; }
     var bannerDrivers = drivers.slice(0, 2);
     var banner = '<section class="tm-banner" style="' + band.style + '">'
       + '<div class="tm-banner__text">'
-      +   '<button type="button" class="tm-back" id="tm-back">&larr; All teams</button>'
+      +   '<button type="button" class="tm-back" id="tm-back">' + BTG.icon('arrow-left', 15) + ' All teams</button>'
       +   '<div class="tm-banner__kicker">' + esc(activeSeries) + ' ' + esc(activeSeason)
-      +     (wccTitles.length ? '<span class="tm-banner__titles">&#127942; ' + wccTitles.length + '&times; ' + esc(seriesChampionshipLabel(activeSeries)) + '</span>' : '')
+      +     (wccTitles.length ? '<span class="tm-banner__titles">' + BTG.icon('trophy', 15) + ' ' + wccTitles.length + '&times; ' + esc(seriesChampionshipLabel(activeSeries)) + '</span>' : '')
       +   '</div>'
       +   '<div class="tm-banner__name">' + (BTG.teamLogoImg ? '<span class="tm-banner__logo">' + BTG.teamLogoImg(teamKey(tid), activeSeries, 56) + '</span>' : '') + '<span>' + esc(name) + '</span></div>'
       +   '<div class="tm-banner__stats">'
@@ -1209,7 +1209,7 @@ a.tm-chip:hover { border-color: #fff; color: #fff; }
             ? '<table class="tm-table"><thead><tr><th>Season</th><th class="r">Pos</th><th class="r">Pts</th></tr></thead><tbody>'
               + standingsHist.map(function (r) {
                   var p = num(r.position);
-                  return '<tr><td>' + seasonYear(r.season_id) + (wccTitles.indexOf(r) !== -1 ? ' &#127942;' : '') + '</td>'
+                  return '<tr><td>' + seasonYear(r.season_id) + (wccTitles.indexOf(r) !== -1 ? ' ' + BTG.icon('trophy', 13, 'ic-gold') : '') + '</td>'
                     + '<td class="r tm-strong' + (p === 1 ? ' tm-red' : '') + '">P' + r.position + '</td><td class="r">' + r.points + '</td></tr>';
                 }).join('') + '</tbody></table>'
             : empty('No history')) + '</div>'

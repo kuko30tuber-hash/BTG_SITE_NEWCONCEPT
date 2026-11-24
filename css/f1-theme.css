@@ -504,3 +504,4 @@ body[data-page="news-writer"] .f1-footer { display: none; }
 .nf-feature.is-portrait img { height: auto !important; max-height: 560px; background: transparent; border-right: 0; }
 .nf-feature.is-portrait .nf-snippet--long { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow: hidden; }
 @media (min-width: 1200px) { .nf-feature.is-portrait .nf-snippet--long { -webkit-line-clamp: 8; } }
+.f1-util__support .ic { margin-right: 5px; } .donate-btn-icon .ic { display: block; }

@@ -629,7 +629,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
           <label for="gate-password">Password</label>
           <input type="password" id="gate-password" name="password" placeholder="••••••••" autocomplete="current-password">
         </div>
-        <button type="submit" class="action action-lead btn-login" id="unlock-btn"><span>Log in →</span></button>
+        <button type="submit" class="action action-lead btn-login" id="unlock-btn"><span>Log in <svg class="ic ic-arrow-right" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></button>
         </form>
         <div class="error-line" id="gate-error" style="margin-top:12px;"></div>
       </div>
@@ -908,7 +908,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
 
     <div class="tool-card">
       <h3>Import race results (RLT / League export)</h3>
-      <p class="muted" style="margin-bottom:12px;">Import from a Racing League Tools (RLT) <code>.db</code> <i>or</i> a League-export <code>.db</code> (the schema that mirrors the DB: <code>Teams</code>, <code>races</code>, <code>race_results</code>…). The file is read locally in your browser — only the parsed data is sent to the DB. RLT files: pick the series (RLT can hold any series) and, if there are multiple championships for it, the right one; races are matched to the calendar by circuit (feature → <code>race_results</code>, sprint → <code>race_sprints</code>), replacing existing results for a matched race. League-export files carry their own series/teams/calendar/results and are upserted as-is (safe to re-run).</p>
+      <p class="muted" style="margin-bottom:12px;">Import from a Racing League Tools (RLT) <code>.db</code> <i>or</i> a League-export <code>.db</code> (the schema that mirrors the DB: <code>Teams</code>, <code>races</code>, <code>race_results</code>…). The file is read locally in your browser — only the parsed data is sent to the DB. RLT files: pick the series (RLT can hold any series) and, if there are multiple championships for it, the right one; races are matched to the calendar by circuit (feature to <code>race_results</code>, sprint to <code>race_sprints</code>), replacing existing results for a matched race. League-export files carry their own series/teams/calendar/results and are upserted as-is (safe to re-run).</p>
       <div class="field-row">
         <div class="field" style="max-width:190px;">
           <label for="imp-series-select">Series (RLT only)</label>
@@ -1257,7 +1257,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
       <div class="field-row" id="season-clock-controls">
         <button class="action" id="season-next-day-btn"><span>Next day</span></button>
         <button class="action" id="season-next-week-btn"><span>Next week</span></button>
-        <button class="action action-lead" id="season-next-race-btn"><span>Next race →</span></button>
+        <button class="action action-lead" id="season-next-race-btn"><span>Next race <svg class="ic ic-arrow-right" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></button>
       </div>
       <div class="season-cal-layout">
         <div id="season-calendar"></div>
@@ -1272,7 +1272,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
       <div class="result-line" id="season-result" style="display:none;"></div>
     </div>
     <div class="tool-card" id="season-clock-card">
-      <h3>Auto clock — real date → race</h3>
+      <h3>Auto clock — real date to race</h3>
       <p class="muted" style="margin-bottom:10px;">Set the real-world date of the next race. The league clock eases toward it on a bell curve (slower as it gets close) and stops 2 days before race day. The scale is stored server-side only.</p>
       <div class="field-row">
         <label for="clock-series-select" style="width:auto; min-width:0;">Series</label>
@@ -1294,7 +1294,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
       <p class="muted" style="margin-bottom:12px;">Advance to the next month — the monthly portion of every salary is paid out.</p>
       <div class="field-row">
         <div class="readout"><div class="value" id="admin-month">—</div><div class="caption">Current month</div></div>
-        <button class="action action-lead" id="advance-month-btn"><span>Next month →</span></button>
+        <button class="action action-lead" id="advance-month-btn"><span>Next month <svg class="ic ic-arrow-right" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></button>
       </div>
       <div class="result-line" id="advance-month-result"></div>
     </div>
@@ -1417,7 +1417,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
       </div>
 
       <div class="cluster" style="justify-content:flex-end; margin-top:16px;">
-        <button class="action action-compact" id="aggr-save-btn"><span>Commit Aggression →</span></button>
+        <button class="action action-compact" id="aggr-save-btn"><span>Commit Aggression <svg class="ic ic-arrow-right" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></button>
       </div>
       <div class="result-line" id="aggr-result"></div>
     </div>
@@ -1437,7 +1437,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
         <span class="tag" id="pending-tag"><span class="mark" style="background:var(--brass)"></span>No changes</span>
         <span class="tag tag-moss hidden" id="pool-ok-tag">Within target</span>
       </div>
-      <button class="action action-lead" id="submit-btn" disabled><span>Submit Update →</span></button>
+      <button class="action action-lead" id="submit-btn" disabled><span>Submit Update <svg class="ic ic-arrow-right" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span></button>
     </div>
     <div class="result-line" id="result-line" style="margin-top:14px;"></div>
   </section>
@@ -1584,7 +1584,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="compose-title">New message</div>
-      <button class="modal-close" onclick="closeMailCompose()">✕</button>
+      <button class="modal-close" onclick="closeMailCompose()" aria-label="Close"><svg class="ic ic-x" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
       <div class="field">
@@ -1610,7 +1610,7 @@ section h2{font-family:var(--head-face); font-size:19px; font-weight:600; text-t
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Modify contract</div>
-      <button class="modal-close" onclick="closeContractModify()">✕</button>
+      <button class="modal-close" onclick="closeContractModify()" aria-label="Close"><svg class="ic ic-x" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="modal-body">
       <div class="field-row">
@@ -2063,7 +2063,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     err.textContent = 'Could not reach the gateway script: ' + e.message;
     err.style.display = 'block';
   } finally {
-    btn.disabled = false; btn.querySelector('span').textContent = 'Log in →';
+    btn.disabled = false; btn.querySelector('span').innerHTML = 'Log in ' + BTG.icon('arrow-right', 15);
   }
 });
 
@@ -2445,7 +2445,7 @@ function openPartModal(partId, car, teamKey) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay open';
   overlay.innerHTML = '<div class="modal">'
-    + '<div class="modal-header"><div class="modal-title">' + BTG.esc(pt.catalog_name) + ' — Car ' + car + '</div><button type="button" class="modal-close">✕</button></div>'
+    + '<div class="modal-header"><div class="modal-title">' + BTG.esc(pt.catalog_name) + ' — Car ' + car + '</div><button type="button" class="modal-close" aria-label="Close">' + BTG.icon('x', 18) + '</button></div>'
     + '<div class="modal-body">'
     + '<p class="muted" style="margin-bottom:12px;">Compare your team’s current estimates, then choose a design. More laps narrow the ranges.</p>'
     + '<div class="pa-design-list">'
@@ -2581,7 +2581,7 @@ async function renderTransactions() {
     list.forEach(function (r) {
       const pos = r.amount >= 0;
       html += '<div class="ml-row">'
-        + '<span class="ml-icon ' + (pos ? 'ml-icon--in' : 'ml-icon--out') + '">' + (pos ? '↓' : '↑') + '</span>'
+        + '<span class="ml-icon ' + (pos ? 'ml-icon--in' : 'ml-icon--out') + '">' + (pos ? BTG.icon('arrow-down', 14) : BTG.icon('arrow-up', 14)) + '</span>'
         + '<span class="ml-label">' + BTG.esc(prettyTeamsIn(r.label)) + '</span>'
         + '<span class="ml-amt ' + (pos ? 'ml-pos' : 'ml-neg') + '">' + sign(r.amount) + '</span></div>';
     });
@@ -2921,7 +2921,7 @@ function renderContracts() {
     const offerClass = st === 'Rejected' ? 'denied' : (st === 'On Hold' ? 'warn' : '');
     var otr = teamRowFor(o.team);
     offerHtml += '<div class="offer ' + offerClass + '" style="--ct-team:' + teamColorFor(o.team) + '">'
-      + '<div class="offer-top">' + (otr && BTG.teamLogoImg ? '<span class="offer-logo">' + BTG.teamLogoImg(otr.team_key, otr.series || 'F1', 26) + '</span>' : '') + '<span class="strong">' + BTG.esc(prettyTeam(o.team)) + ' → ' + BTG.esc(prettyTeam(o.target)) + '</span>' + (o.modify ? '<span class="tag-pill warn">Contract change</span>' : '') + (o.offerKind === 'loan' ? '<span class="tag-pill">Loan - ' + BTG.esc(o.loanTeam) + ' (' + (o.loanPercent || 0) + '% paid by them)</span>' : '')
+      + '<div class="offer-top">' + (otr && BTG.teamLogoImg ? '<span class="offer-logo">' + BTG.teamLogoImg(otr.team_key, otr.series || 'F1', 26) + '</span>' : '') + '<span class="strong">' + BTG.esc(prettyTeam(o.team)) + ' ' + BTG.icon('arrow-right', 14) + ' ' + BTG.esc(prettyTeam(o.target)) + '</span>' + (o.modify ? '<span class="tag-pill warn">Contract change</span>' : '') + (o.offerKind === 'loan' ? '<span class="tag-pill">Loan - ' + BTG.esc(o.loanTeam) + ' (' + (o.loanPercent || 0) + '% paid by them)</span>' : '')
       + '<span class="stamp">' + fmtMoney(o.salary) + ' · ' + BTG.esc(o.from || '—') + '–' + BTG.esc(o.till || '—') + (o.role ? ' · ' + BTG.esc(o.role) : '') + '</span></div>'
       + (o.message ? '<div class="offer-body">' + BTG.esc(o.message) + '</div>' : '')
       + (o.promise ? '<div class="offer-body">Promise: seat in <b>' + BTG.esc(o.promise.series) + '</b>' + (o.promise.by ? ' by <b>' + BTG.esc(o.promise.by) + '</b>' : '') + '</div>' : '')
@@ -3339,10 +3339,10 @@ async function refreshMail() {
       renderContracts();
       buildDashSidebar(CURRENT_USER.role);
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   }
 }
 
@@ -3351,9 +3351,9 @@ async function refreshDashboard() {
   try {
     const data = await callGateway('session', {});
     if (data.ok) onLoginSuccess(data);
-    else alert('✗ ' + data.error);
+    else alert('' + data.error);
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   }
 }
 
@@ -3994,7 +3994,7 @@ function impRenderPreview() {
       + '<div style="color:var(--copy-soft);font-size:12px;margin-top:2px;">'
       + 'Feature: ' + r.feature.length + ' drivers' + (r.laps ? ' · ' + r.laps + ' laps' : '')
       + (r.sprint.length ? ' &nbsp;|&nbsp; Sprint: ' + r.sprint.length + ' drivers' : '')
-      + (skip.length ? ' &nbsp;<span style="color:#f59e0b;">⚠ ' + BTG.esc(skip.join('; ')) + '</span>' : '')
+      + (skip.length ? ' &nbsp;<span style="color:#f59e0b;">' + BTG.icon('alert', 14, 'ic-warn') + ' ' + BTG.esc(skip.join('; ')) + '</span>' : '')
       + '</div></div>';
   });
   if (IMP.warnings.length) {
@@ -5031,7 +5031,7 @@ document.getElementById('acct-save-btn').addEventListener('click', async () => {
 function showResult(el, ok, text) {
   el.style.display = 'block';
   el.className = 'result-line ' + (ok ? 'ok' : 'err');
-  el.textContent = text;
+  el.innerHTML = BTG.statusHtml(text);
 }
 
 /* ---------- driver + attributes ---------- */
@@ -5051,7 +5051,7 @@ function renderDriver() {
   document.getElementById('driver-hero-name').textContent = SELECTED.driver;
   document.getElementById('driver-hero-ovr').textContent = SELECTED.ovr.toFixed(1);
   var flagHtml = iocFlagImg(SELECTED.nation, 48, 36);
-  document.getElementById('driver-hero-flag').innerHTML = flagHtml || '🏳️';
+  document.getElementById('driver-hero-flag').innerHTML = flagHtml || BTG.icon('flag', 28);
   document.getElementById('driver-hero-nation-code').textContent = SELECTED.nation || '—';
   document.getElementById('driver-hero').classList.remove('hidden');
 
@@ -5552,7 +5552,7 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
     resultLine.style.display = 'block';
     if (data.ok) {
       resultLine.className = 'result-line ok';
-      resultLine.textContent = '✓ Sheet updated. ' + SELECTED.driver + ' now at OVR ' + data.driver.ovr.toFixed(1) + '.';
+      resultLine.innerHTML = BTG.statusHtml('✓ Sheet updated. ' + SELECTED.driver + ' now at OVR ' + data.driver.ovr.toFixed(1) + '.');
       if (data.driver) {
         SELECTED = data.driver;
         const idx = DRIVERS.findIndex(d => d.driver === SELECTED.driver);
@@ -5562,14 +5562,14 @@ document.getElementById('submit-btn').addEventListener('click', async () => {
       renderDriver();
     } else {
       resultLine.className = 'result-line err';
-      resultLine.textContent = '✗ Update rejected: ' + data.error;
+      resultLine.innerHTML = BTG.statusHtml('✗ Update rejected: ' + data.error);
     }
   } catch (e) {
     resultLine.style.display = 'block';
     resultLine.className = 'result-line err';
-    resultLine.textContent = '✗ Could not reach the gateway script.';
+    resultLine.innerHTML = BTG.statusHtml('✗ Could not reach the gateway script.');
   } finally {
-    btn.querySelector('span').textContent = 'Submit Update →';
+    btn.querySelector('span').innerHTML = 'Submit Update ' + BTG.icon('arrow-right', 15);
     refreshStepperState();
   }
 });
@@ -5760,9 +5760,9 @@ async function toggleImportant(name) {
       DASH.importantSenders = list;
       renderMailbox();
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
-  } catch (e) { alert('✗ Could not reach the gateway script.'); }
+  } catch (e) { alert('Could not reach the gateway script.'); }
 }
 function onMailSearch(el) {
   MAIL_SEARCH = el.value;
@@ -5890,7 +5890,7 @@ function renderMailbox() {
     + '<option value="">All senders</option>'
     + mailSenders.map(function (s) { return '<option value="' + BTG.esc(s) + '"' + (MAIL_SENDER_FILTER === s ? ' selected' : '') + '>' + BTG.esc(s) + '</option>'; }).join('')
     + '</select>'
-    + '<label class="mail-important-only"><input type="checkbox" ' + (MAIL_IMPORTANT_ONLY ? 'checked ' : '') + 'onchange="MAIL_IMPORTANT_ONLY=this.checked;renderMailbox()"> ★ Important</label>';
+    + '<label class="mail-important-only"><input type="checkbox" ' + (MAIL_IMPORTANT_ONLY ? 'checked ' : '') + 'onchange="MAIL_IMPORTANT_ONLY=this.checked;renderMailbox()"> ' + BTG.icon('star-fill', 13, 'ic-gold') + ' Important</label>';
   if (role === 'admin') {
     var people = [];
     DRIVERS.forEach(function (d) { if (d.driver) people.push(d.driver); });
@@ -5910,8 +5910,8 @@ function renderMailbox() {
     html += '<div class="mail-row mx-row' + (i === MAIL_SEL[MAIL_FOLDER] ? ' active' : '') + (isUnread ? ' unread' : '') + '" onclick="selectMailItem(' + i + ')">'
       + mailAvatar(who)
       + '<div class="mx-row__main">'
-      +   '<div class="mail-row-top"><span class="mail-sender">' + (it.important ? '<span class="mail-star">★</span>' : '')
-      +     (it.kind === 'sent' ? '<span class="mx-to">To </span>' : '') + BTG.esc(prettyTeamsIn(who)) + (it.kind === 'offer' ? ' → ' + BTG.esc(prettyTeam(it.to)) : '') + '</span>'
+      +   '<div class="mail-row-top"><span class="mail-sender">' + (it.important ? '<span class="mail-star">' + BTG.icon('star-fill', 12, 'ic-gold') + '</span>' : '')
+      +     (it.kind === 'sent' ? '<span class="mx-to">To </span>' : '') + BTG.esc(prettyTeamsIn(who)) + (it.kind === 'offer' ? ' ' + BTG.icon('arrow-right', 12) + ' ' + BTG.esc(prettyTeam(it.to)) : '') + '</span>'
       +     (it.status ? '<span class="mail-date">' + BTG.esc(it.status) + '</span>' : '')
       +     (isUnread ? '<span class="unread-dot" title="Unread"></span>' : '')
       +   '</div>'
@@ -5924,7 +5924,7 @@ function renderMailbox() {
     html += '<div class="mx-blocked"><div class="mx-blocked__title">Blocked</div>'
       + DASH.blocked.map(function (n) {
           return '<div class="mx-blocked__row"><span>' + BTG.esc(n) + '</span>'
-            + '<button class="modal-close" data-from="' + BTG.esc(n) + '" onclick="unblockMailSender(this.dataset.from)" title="Unblock">✕</button></div>';
+            + '<button class="modal-close" data-from="' + BTG.esc(n) + '" onclick="unblockMailSender(this.dataset.from)" title="Unblock" aria-label="Unblock">' + BTG.icon('x', 14) + '</button></div>';
         }).join('') + '</div>';
   }
   if (role === 'admin' && DASH.blockedMap) {
@@ -5942,7 +5942,7 @@ function renderMailbox() {
   if (sel) {
     html += '<div class="read-subj">' + BTG.esc(sel.subject) + '</div>'
       + '<div class="read-meta">' + mailAvatar(sel.from, 'mx-avatar--lg')
-      + '<div><div style="font-weight:700;color:var(--copy)">' + BTG.esc(prettyTeamsIn(sel.from)) + ' <span class="mx-arrow">→</span> ' + BTG.esc(prettyTeamsIn(sel.to)) + '</div>'
+      + '<div><div style="font-weight:700;color:var(--copy)">' + BTG.esc(prettyTeamsIn(sel.from)) + ' <span class="mx-arrow">' + BTG.icon('arrow-right', 13) + '</span> ' + BTG.esc(prettyTeamsIn(sel.to)) + '</div>'
       + '<div style="font-size:12px;color:var(--copy-faint)">' + (sel.kind === 'offer' ? 'Contract offer' : 'Message') + '</div></div></div>'
       + '<div class="read-body">' + BTG.esc(mailRest(sel.body) || sel.body) + '</div>';
     if (sel.kind === 'offer') {
@@ -5959,7 +5959,7 @@ function renderMailbox() {
             ? '<button class="action action-quiet action-compact" onclick="markMailReadItem(' + sel.row + ')"><span>Mark as read</span></button>'
             : '')
         + (sel.kind === 'mail' && sel.from && sel.from !== 'BTG Officials'
-            ? '<button class="action action-quiet action-compact" data-from="' + BTG.esc(sel.from) + '" onclick="toggleImportant(this.dataset.from)"><span>' + (isImportant(sel.from) ? '★ Important' : '☆ Important') + '</span></button>'
+            ? '<button class="action action-quiet action-compact" data-from="' + BTG.esc(sel.from) + '" onclick="toggleImportant(this.dataset.from)"><span>' + (isImportant(sel.from) ? BTG.icon('star-fill', 14, 'ic-gold') + ' Important' : BTG.icon('star', 14) + ' Important') + '</span></button>'
             : '')
         + '<button class="action action-quiet action-compact" onclick="deleteMailItem(' + sel.row + ')"><span>Delete</span></button>'
         + (canBlock
@@ -6100,7 +6100,7 @@ function tagPickRender(id) {
   st.tags.forEach(function (n) {
     var el = document.createElement('span');
     el.className = 'tagpick-tag kind-' + (kinds[n] || 'other');
-    el.innerHTML = BTG.esc(n) + '<button type="button" class="tagpick-tag-x" data-name="' + BTG.esc(n) + '" aria-label="Remove ' + BTG.esc(n) + '">✕</button>';
+    el.innerHTML = BTG.esc(n) + '<button type="button" class="tagpick-tag-x" data-name="' + BTG.esc(n) + '" aria-label="Remove ' + BTG.esc(n) + '">' + BTG.icon('x', 12) + '</button>';
     st.box.insertBefore(el, st.input);
   });
   st.input.placeholder = st.tags.length ? '' : 'Search recipients…';
@@ -6298,10 +6298,10 @@ async function blockMailSender(name) {
       if (DASH.blocked.indexOf(name) === -1) DASH.blocked.push(name);
       renderMailbox();
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   }
 }
 
@@ -6314,10 +6314,10 @@ async function unblockMailSender(name) {
       DASH.blocked = (DASH.blocked || []).filter(function (x) { return x !== name; });
       renderMailbox();
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   }
 }
 
@@ -6713,7 +6713,7 @@ function scoutRender() {
   var list = scoutFiltered();
   var rows = list.map(function (d) {
     var col = scoutColorFor(d.name);
-    var watchTag = d.watch ? '<span class="scout-watch-tag">★ Watch</span>' : '';
+    var watchTag = d.watch ? '<span class="scout-watch-tag">' + BTG.icon('star-fill', 12, 'ic-gold') + ' Watch</span>' : '';
     var avatar = scoutAvatarHtml(d);
     var hasImg = avatar.indexOf('<img') !== -1;
     return '<tr class="' + (d.watch ? 'watch-row ' : '') + (SCOUT.selected === d.name ? 'selected' : '') + '" data-name="' + BTG.esc(d.name) + '">'
@@ -6749,7 +6749,7 @@ function scoutRender() {
     + '<button class="' + (SCOUT.view === 'fav' ? 'active' : '') + '" data-view="fav">Favourites <span class="cnt">' + favCount + '</span></button>'
     + '</div></div>'
     + '<div class="scout-fgroup"><label class="ftitle">Search</label><div class="scout-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" id="scout-search-input" placeholder="Search by name, team or series…" value="' + BTG.esc(SCOUT.search) + '"></div></div>'
-    + '<div class="scout-fgroup" style="display:flex; align-items:flex-end; padding-bottom:2px;"><label class="scout-check"><input type="checkbox" id="scout-soon"' + (SCOUT.soon ? ' checked' : '') + '><span class="box">✓</span> Contract ending ' + (CURRENT_YEAR || 2024) + ' only</label></div>'
+    + '<div class="scout-fgroup" style="display:flex; align-items:flex-end; padding-bottom:2px;"><label class="scout-check"><input type="checkbox" id="scout-soon"' + (SCOUT.soon ? ' checked' : '') + '><span class="box">' + BTG.icon('check', 12) + '</span> Contract ending ' + (CURRENT_YEAR || 2024) + ' only</label></div>'
     + '</div>'
     + '<div class="scout-footer"><div class="scout-result-count"><b>' + list.length + '</b> match your filters</div><button class="scout-clear" id="scout-clear">Clear all filters</button></div>'
     + '</div></div></div>';
@@ -6874,7 +6874,7 @@ function scoutRenderDetail(name) {
       + '<span class="scout-name-txt" style="font-size:15px;">' + BTG.esc(d.name) + '</span>'
       + '<span style="flex:1;"></span>'
       + '<button class="scout-btn scout-btn-primary" style="flex:none;padding:9px 16px;" data-approach="' + BTG.esc(d.name) + '">Approach Driver</button>'
-      + '<button class="scout-btn scout-btn-ghost" style="flex:none;padding:9px 16px;" data-watch="' + BTG.esc(d.name) + '">' + (d.watch ? '✓ On Watch' : '★ Watch') + '</button>'
+      + '<button class="scout-btn scout-btn-ghost" style="flex:none;padding:9px 16px;" data-watch="' + BTG.esc(d.name) + '">' + (d.watch ? BTG.icon('check', 14, 'ic-ok') + ' On Watch' : BTG.icon('star', 14) + ' Watch') + '</button>'
       + '</div></div>';
   }
 
@@ -6928,7 +6928,7 @@ async function scoutToggleFav(name) {
   try {
     var data = await callGateway('scoutingFav', { targetType: t.type, targetId: t.id, targetName: t.name });
     scoutRefreshWith(data);
-  } catch (e) { alert('✗ Could not reach the gateway script.'); }
+  } catch (e) { alert('Could not reach the gateway script.'); }
 }
 async function scoutToggleWatch(name) {
   if (!CURRENT_USER) return;
@@ -6937,7 +6937,7 @@ async function scoutToggleWatch(name) {
   try {
     var data = await callGateway('scoutingWatch', { targetType: t.type, targetId: t.id, targetName: t.name, on: on });
     scoutRefreshWith(data);
-  } catch (e) { alert('✗ Could not reach the gateway script.'); }
+  } catch (e) { alert('Could not reach the gateway script.'); }
 }
 function scoutApproach(name) {
   // TP: pre-select this driver in the "Send a contract offer" form + scroll to it
@@ -6990,7 +6990,7 @@ async function respondOffer(offerRow, response) {
       alert(contractActionError(data.error));
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   } finally {
     window._offerActionPending = false;
   }
@@ -7014,10 +7014,10 @@ async function adminResolveOffer(offerRow, approve) {
       renderContracts();
       if (CURRENT_USER) buildDashSidebar(CURRENT_USER.role);
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   } finally {
     window._offerActionPending = false;
   }
@@ -7041,10 +7041,10 @@ async function respondParentOffer(offerRow, accept) {
       renderContracts();
       if (CURRENT_USER) buildDashSidebar(CURRENT_USER.role);
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   } finally {
     window._offerActionPending = false;
   }
@@ -7068,10 +7068,10 @@ async function respondLoanTeam(offerRow, accept) {
       renderContracts();
       if (CURRENT_USER) buildDashSidebar(CURRENT_USER.role);
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   } finally {
     window._offerActionPending = false;
   }
@@ -7096,10 +7096,10 @@ async function respondCounter(offerRow, accept) {
       renderContracts();
       if (CURRENT_USER) buildDashSidebar(CURRENT_USER.role);
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   } finally {
     window._offerActionPending = false;
   }
@@ -7116,10 +7116,10 @@ async function deleteMailItem(row) {
     if (data.ok) {
       refreshMail();
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   }
 }
 
@@ -7133,10 +7133,10 @@ async function markMailReadItem(row) {
     if (data.ok) {
       refreshMail();
     } else {
-      alert('✗ ' + data.error);
+      alert('' + data.error);
     }
   } catch (e) {
-    alert('✗ Could not reach the gateway script.');
+    alert('Could not reach the gateway script.');
   }
 }
 
@@ -7344,7 +7344,7 @@ function renderWeekendPanel() {
       + (flag ? '<img src="' + flag + '" alt="" onerror="this.style.display=\'none\'">' : '')
       + '</div>'
       + '<div class="season-weekend-tag"><span class="season-weekend-pill"><span class="season-weekend-dot" style="background:' + color + '"></span>'
-      + BTG.esc(r.series) + ' · ' + wStart + ' → ' + rd + (isSprint ? ' · Sprint' : '') + '</span></div>'
+      + BTG.esc(r.series) + ' · ' + wStart + ' ' + BTG.icon('arrow-right', 12) + ' ' + rd + (isSprint ? ' · Sprint' : '') + '</span></div>'
       + '</div>'
       + '</div>';
   });
@@ -7475,7 +7475,7 @@ async function loadSeasonClockUI() {
   catch (e) { return; }
   if (!data || !data.ok) {
     const line = document.getElementById('clock-status-line');
-    if (line && data && data.error === 'clock_table_missing') line.innerHTML = '<span style="color:#f87171;">⚠ The <b>season_clock</b> table isn\'t set up — run <b>supabase-clock.sql</b> in the SQL editor, then reload.</span>';
+    if (line && data && data.error === 'clock_table_missing') line.innerHTML = '<span style="color:#f87171;">' + BTG.icon('alert', 14, 'ic-warn') + ' The <b>season_clock</b> table isn\'t set up — run <b>supabase-clock.sql</b> in the SQL editor, then reload.</span>';
     return;
   }
   // Series selector: All + each series with a calendar.
@@ -7495,7 +7495,7 @@ async function loadSeasonClockUI() {
   if (configTableMissing) {
     if (d) d.textContent = '—';
     if (t) t.textContent = '—';
-    if (line) line.innerHTML = '<span style="color:#f87171;">⚠ The <b>season_clock</b> table isn\'t set up — run <b>supabase-clock.sql</b> in the SQL editor, then reload.</span>';
+    if (line) line.innerHTML = '<span style="color:#f87171;">' + BTG.icon('alert', 14, 'ic-warn') + ' The <b>season_clock</b> table isn\'t set up — run <b>supabase-clock.sql</b> in the SQL editor, then reload.</span>';
   } else if (series === 'ALL') {
     // Combined view: one date line per series.
     const tbs = data.todayBySeries || {};
@@ -7508,7 +7508,7 @@ async function loadSeasonClockUI() {
       const pct = c && c.progress ? c.progress.leaguePct : 0;
       return '<div style="font-size:12px;">' + BTG.esc(s.name || s.id)
         + ' · ' + BTG.esc(today)
-        + (stop ? ' → stops <b>' + BTG.esc(stop) + '</b> (' + pct + '%)' : ' — no target')
+        + (stop ? ' ' + BTG.icon('arrow-right', 12) + ' stops <b>' + BTG.esc(stop) + '</b> (' + pct + '%)' : ' — no target')
         + '</div>';
     }).join('');
     if (d) d.textContent = 'All series';

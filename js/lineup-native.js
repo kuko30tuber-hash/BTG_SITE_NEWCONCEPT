@@ -3,6 +3,17 @@
 function create(host,options={}){
 const board=host.querySelector('.board');board.classList.add('lineup-board');
 const $=s=>s==='#board'?board:host.querySelector(s),S={},LOGO='',SIL='';
+/* Nation → flag image (Flags/xx.svg); accepts ISO-2 ("NO"), IOC ("GBR") or a flag emoji.
+   Falls back to a neutral flag icon when no flag exists. */
+window.btgNationFlag=window.btgNationFlag||function(n){
+  let s=String(n==null?'':n).trim(),a2='';
+  const cps=Array.from(s).map(c=>c.codePointAt(0));
+  if(cps.length===2&&cps.every(c=>c>=0x1F1E6&&c<=0x1F1FF))a2=cps.map(c=>String.fromCharCode(c-0x1F1E6+97)).join('');
+  else if(/^[A-Za-z]{2}$/.test(s))a2=s.toLowerCase();
+  else if(/^[A-Za-z]{3}$/.test(s)&&window.BTG&&BTG.flagImg){const m=/src="([^"]+)"/.exec(BTG.flagImg(s.toUpperCase(),24,16)||'');if(m)return `<img src="${m[1]}" alt="">`;}
+  if(a2)return `<img src="Flags/${a2}.svg" alt="">`;
+  return '<svg class="ic ic-flag" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>';
+};
 const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
 const lum=h=>{const n=parseInt(h.slice(1),16),f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(n>>16)+.7152*f(n>>8&255)+.0722*f(n&255)};
 const shade=(h,a)=>{const n=parseInt(h.slice(1),16),f=v=>Math.round(a<0?v*(1+a):v+(255-v)*a);return '#'+[n>>16,n>>8&255,n&255].map(v=>f(v).toString(16).padStart(2,'0')).join('')};
@@ -127,7 +138,7 @@ function renderF2(b){
    for(let j=0;j<d;j++){
      const p=t.dr[j],num=p.num??(i*4+j+1);
      const rtag=S.opts.rookie?`<button class="rk f2-rookie${p.rookie?' on':''}" type="button" data-k="rookie" data-t="${i}" data-d="${j}" aria-label="${p.rookie?'Remove rookie status':'Mark as rookie'}: ${esc(p.name)}" aria-pressed="${!!p.rookie}" title="${p.rookie?'Remove rookie status':'Mark as rookie'}">${p.rookie?'ROOKIE':'+'}</button>`:'';
-     const flag=S.opts.flag?`<span class="f2-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag for ${esc(p.name)}">${p.flag?`<img src="${p.flag}" alt="">`:`<span>${esc(p.nation||'🏁')}</span>`}</span>`:'';
+     const flag=S.opts.flag?`<span class="f2-flag" role="button" tabindex="0" data-k="flag" data-t="${i}" data-d="${j}" aria-label="Upload flag for ${esc(p.name)}">${p.flag?`<img src="${p.flag}" alt="">`:`<span>${btgNationFlag(p.nation)}</span>`}</span>`:'';
      drivers+=`<div class="f2-driver" data-t="${i}" data-d="${j}" style="--c:${palette[j]};--ink:${tc(palette[j])}">
        <div class="f2-face ph" role="button" tabindex="0" data-k="img" data-t="${i}" data-d="${j}" aria-label="Upload portrait for ${esc(p.name)}">${p.img?`<img src="${p.img}" alt="">`:SIL}</div>
        <div class="f2-label">${flag}<span class="t" ${editable} data-t="${i}" data-d="${j}">${esc(p.name)}</span></div>

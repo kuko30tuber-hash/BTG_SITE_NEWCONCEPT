@@ -204,7 +204,7 @@
       var sp = r.grid || 20, fp = r.pos || 20;
       var sy = ((sp - 1) / 19) * 80, fy = ((fp - 1) / 19) * 80;
       var label = abbreviate(r.track) || 'R' + (i + 1);
-      return '<div class="dp-sparkline__race" title="' + BTG.esc(label) + ': P' + sp + '→P' + fp + '">'
+      return '<div class="dp-sparkline__race" title="' + BTG.esc(label) + ': started P' + sp + ', finished P' + fp + '">'
         + '<div class="dp-sparkline__track">'
         + (!r.dnf ? '<div class="dp-sparkline__line" style="top:' + Math.min(sy, fy) + 'px;height:' + (Math.abs(fy - sy) + 3) + 'px;background:rgb(' + color + ')"></div>' : '')
         + '<div class="dp-sparkline__dot" style="top:' + fy + 'px;background:' + (r.dnf ? '#ef4444' : '#34d399') + '"></div>'
@@ -641,7 +641,7 @@
       html += '<div class="dp-card"><div class="dp-card__title">Season Stats</div>'
         + '<div class="dp-stats-grid">'
         + statCell(ss.races || '—', 'Races') + statCell(ss.avgFinish || '—', 'Avg Finish') + statCell(ss.wins || '—', 'Wins') + statCell(ss.avgGrid || '—', 'Avg Grid')
-        + statCell(ss.podiums || '—', 'Podiums') + statCell(ss.poles || '—', 'Poles') + statCell(ss.dnfs || '—', 'DNFs') + statCell('—', 'Pole→Win')
+        + statCell(ss.podiums || '—', 'Podiums') + statCell(ss.poles || '—', 'Poles') + statCell(ss.dnfs || '—', 'DNFs') + statCell('—', 'Pole to win')
         + '</div>'
         + '<div style="margin-top:10px"><div class="dp-card__subtitle">Sprint Races</div>'
         + '<div class="dp-stats-grid" style="grid-template-columns:repeat(4,1fr)">'

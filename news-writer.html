@@ -178,7 +178,7 @@
       <h1>News Article Writer</h1>
       <p class="nw-head-sub">Write your article, select text and format it with the buttons — no HTML needed. Save as a JSON file for the <code>news/</code> folder. This page isn’t linked from the top bar; open <code>news-writer.html</code> directly.</p>
     </div>
-    <button type="button" id="nw-import">⬆ Import JSON</button>
+    <button type="button" id="nw-import"><svg class="ic ic-upload" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg> Import JSON</button>
   </div>
 
   <div class="nw-form">
@@ -251,7 +251,7 @@
           <button type="button" data-cmd="indent" title="Indent">Indent</button>
           <button type="button" data-cmd="outdent" title="Outdent">Outdent</button>
           <span class="nw-sep"></span>
-          <button type="button" data-cmd="formatBlock" data-val="blockquote" title="Quote">❝ Quote</button>
+          <button type="button" data-cmd="formatBlock" data-val="blockquote" title="Quote"><svg class="ic ic-quote" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.76-2-2-2H4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 0-1 1.03V20c0 1 0 1 1 1zM15 21c3 0 7-1 7-8V5c0-1.25-.76-2-2-2h-4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg> Quote</button>
           <button type="button" data-cmd="justifyLeft" title="Align left">L</button>
           <button type="button" data-cmd="justifyCenter" title="Center">C</button>
           <button type="button" data-cmd="justifyRight" title="Align right">R</button>
@@ -291,7 +291,7 @@
       </details>
 
       <div class="nw-actions">
-        <button type="button" id="nw-download" class="primary">⬇ Download JSON</button>
+        <button type="button" id="nw-download" class="primary"><svg class="ic ic-download" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Download JSON</button>
         <button type="button" id="nw-copy">Copy JSON</button>
       </div>
       <div class="nw-status" id="nw-status"></div>
@@ -793,7 +793,7 @@
   /* ── Status toast ── */
   function status(msg) {
     var el = $('nw-status');
-    el.textContent = msg;
+    el.innerHTML = BTG.statusHtml ? BTG.statusHtml(msg) : msg;
     clearTimeout(status._t);
     status._t = setTimeout(function(){ el.textContent = ''; }, 2600);
   }

@@ -144,7 +144,7 @@ async function main() {
     await saveArticle(NEWS_DIR, slug, art, files, m.timestamp, { source: 'discord', discordMessageId: m.id });
     state.lastMessageId = m.id;
     made++;
-    log('✓', slug, '—', art.title);
+    log('OK', slug, '—', art.title);
   }
 
   await writeJson(STATE_FILE, state);

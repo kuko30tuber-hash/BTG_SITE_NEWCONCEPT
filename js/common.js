@@ -32,7 +32,7 @@ BTG.renderNav = function(activePage) {
   var util = '<div class="f1-util">'
     + '<a href="https://www.youtube.com/@Bethegrid" target="_blank" rel="noopener" aria-label="YouTube"><img src="logos/Youtube.png" alt=""><span class="f1-util__label">YouTube</span></a>'
     + '<a href="https://discord.gg/bethegrid" target="_blank" rel="noopener" aria-label="Discord"><img src="logos/Discord.webp" alt=""><span class="f1-util__label">Discord</span></a>'
-    + '<button class="f1-util__support" type="button" onclick="BTG.openDonate()">&#9829; Support<span class="f1-util__label"> the site</span></button>'
+    + '<button class="f1-util__support" type="button" onclick="BTG.openDonate()">' + BTG.icon('heart', 13) + ' Support<span class="f1-util__label"> the site</span></button>'
     + '</div>';
   var main = '<div class="f1-main"><a class="btg-logo" href="index.html"><img class="btg-logo-img" src="logos/BTG.png" alt="BeTheGrid"></a>';
   tabs.forEach(function(t) {
@@ -86,10 +86,10 @@ BTG.ensureDonateModal = function() {
   overlay.innerHTML =
     '<div class="modal donate-modal">'
     + '<div class="modal-header"><div class="modal-title">Support this site\'s development</div>'
-    + '<button class="modal-close" type="button" onclick="BTG.closeDonate()">✕</button></div>'
+    + '<button class="modal-close" type="button" onclick="BTG.closeDonate()" aria-label="Close">' + BTG.icon('x', 18) + '</button></div>'
     + '<div class="modal-body">'
     + '<a class="donate-btn" href="https://paypal.me/ThatOneEd" target="_blank" rel="noopener">'
-    + '<span class="donate-btn-icon">♥</span>Donate via PayPal'
+    + '<span class="donate-btn-icon">' + BTG.icon('heart', 18) + '</span>Donate via PayPal'
     + '</a>'
     + '<div class="donate-note">Opens PayPal.me in a new tab — you don\'t need a PayPal account to send a donation.</div>'
     + '</div></div>';
@@ -385,6 +385,63 @@ BTG.computeOvr = function(skills) {
 /* ── Formatting ───────────────────────────────────────────────────────────── */
 
 BTG.fmtOvr = function(v) { return (v || 0).toFixed(1); };
+
+/* ── Icons (line style, 24px grid) ───────────────────────────────────────────
+   BTG.icon(name, size, extraClass) → inline <svg>. Replaces emoji/symbols site-wide.
+   BTG.iconize(escapedHtml) swaps ✓ ✗ ⚠ ★ ☆ → ← ↑ ↓ in already-escaped text. */
+BTG.ICONS = {
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  alert: '<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>',
+  star: '<path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>',
+  'star-fill': '<path fill="currentColor" d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>',
+  flag: '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>',
+  finish: '<path d="M4 22V3"/><path d="M4 3h16v11H4"/><path d="M4 3h4v4H4zM12 3h4v4h-4zM8 7h4v3.5H8zM16 7h4v3.5h-4zM4 10.5h4V14H4zM12 10.5h4V14h-4z" fill="currentColor" stroke="none"/>',
+  trophy: '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  crown: '<path d="m2 6 4.5 11h11L22 6l-6 5-4-7-4 7z"/><path d="M5 21h14"/>',
+  timer: '<path d="M10 2h4M12 14l3-3"/><circle cx="12" cy="14" r="8"/>',
+  medal: '<path d="M7.2 2h3.6l2.2 5.5M16.8 2h-3.6l-1 2.5"/><circle cx="12" cy="15" r="6"/><path d="M12 12.5v5"/>',
+  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
+  factory: '<path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1M12 18h1M7 18h1"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  'trending-up': '<path d="M22 7 13.5 15.5l-5-5L2 17"/><path d="M16 7h6v6"/>',
+  'arrow-right': '<path d="M5 12h14M12 5l7 7-7 7"/>',
+  'arrow-left': '<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  'arrow-up': '<path d="M12 19V5M5 12l7-7 7 7"/>',
+  'arrow-down': '<path d="M12 5v14M19 12l-7 7-7-7"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+  quote: '<path d="M3 21c3 0 7-1 7-8V5c0-1.25-.76-2-2-2H4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 0-1 1.03V20c0 1 0 1 1 1zM15 21c3 0 7-1 7-8V5c0-1.25-.76-2-2-2h-4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>',
+  heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'
+};
+BTG.icon = function (name, size, cls) {
+  BTG._iconCss();
+  var s = size || 16;
+  return '<svg class="ic ic-' + name + (cls ? ' ' + cls : '') + '" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + (BTG.ICONS[name] || '') + '</svg>';
+};
+BTG._iconCss = function () {
+  if (BTG._iconCssDone || typeof document === 'undefined' || !document.head) return;
+  BTG._iconCssDone = true;
+  var st = document.createElement('style');
+  st.textContent = '.ic{display:inline-block;flex:none;vertical-align:-.15em}.ic-ok{color:#22c55e}.ic-err{color:#ef4444}.ic-warn{color:#f5a524}.ic-gold{color:#f5b400}'
+    + '.ic-txt{display:inline-flex;align-items:center;gap:6px}button .ic,.action .ic{vertical-align:-.18em}';
+  document.head.appendChild(st);
+};
+BTG.iconize = function (html) {
+  return String(html == null ? '' : html)
+    .replace(/✓/g, BTG.icon('check', 15, 'ic-ok'))
+    .replace(/[✗✕]/g, BTG.icon('x', 15, 'ic-err'))
+    .replace(/⚠️?/g, BTG.icon('alert', 15, 'ic-warn'))
+    .replace(/★/g, BTG.icon('star-fill', 14, 'ic-gold'))
+    .replace(/☆/g, BTG.icon('star', 14))
+    .replace(/→/g, BTG.icon('arrow-right', 14))
+    .replace(/←/g, BTG.icon('arrow-left', 14))
+    .replace(/↑/g, BTG.icon('arrow-up', 14))
+    .replace(/↓/g, BTG.icon('arrow-down', 14));
+};
+/* Status line text (e.g. '✓ Saved') → icon + escaped text. */
+BTG.statusHtml = function (text) { return BTG.iconize(BTG.esc(text)); };
 
 BTG.esc = function(str) {
   if (str == null) return '';

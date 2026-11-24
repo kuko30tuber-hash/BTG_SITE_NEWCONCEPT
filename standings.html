@@ -365,7 +365,7 @@ body { background: var(--bg-base); color: var(--text-primary); font-variant-nume
 <!-- Driver Modal -->
 <div id="driver-modal" class="modal-overlay" onclick="BTG.bgClose(event,'driver-modal')">
   <div class="modal">
-    <button class="modal-close" onclick="BTG.closeModal('driver-modal')">&#10005;</button>
+    <button class="modal-close" onclick="BTG.closeModal('driver-modal')" aria-label="Close"><svg class="ic ic-x" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <div class="modal-driver-team" id="modal-team"></div>
     <div class="modal-driver-name">
       <span class="modal-driver-flag" id="modal-flag"></span>
@@ -492,7 +492,7 @@ body { background: var(--bg-base); color: var(--text-primary); font-variant-nume
     var team = (teams || [])[0];
     var html = '<div class="sl-banner__bg" style="' + (band ? band.style : 'background:#303037;color:#fff') + '"></div>'
       + '<div class="sl-banner__main" style="' + (band ? 'color:' + band.ink : '') + '">'
-      +   '<div class="sl-banner__kicker">' + (settled && gap > 0 ? '&#127942; ' + esc(activeSeries) + ' ' + esc(activeSeason) + ' Champion' : 'Championship leader &middot; ' + esc(activeSeries) + ' ' + esc(activeSeason)) + '</div>'
+      +   '<div class="sl-banner__kicker">' + (settled && gap > 0 ? BTG.icon('trophy', 15) + ' ' + esc(activeSeries) + ' ' + esc(activeSeason) + ' Champion' : 'Championship leader &middot; ' + esc(activeSeries) + ' ' + esc(activeSeason)) + '</div>'
       +   '<div class="sl-banner__name"><span>' + esc(full.split(' ').slice(0, -1).join(' ')) + '</span><b>' + esc(full.split(' ').slice(-1)[0]) + '</b></div>'
       +   '<div class="sl-banner__team">' + (BTG.teamLogoImg && leader.team ? BTG.teamLogoImg(leader.team, activeSeries, 20) : '') + '<span>' + esc(leader.team || '') + '</span></div>'
       +   '<div class="sl-banner__stats">'

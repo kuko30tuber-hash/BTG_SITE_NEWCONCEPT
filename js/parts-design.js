@@ -817,7 +817,7 @@
       + '<span class="pd-tl-title">Development timeline</span>'
       + '<span class="pd-tl-legend"><i style="background:' + c1 + '"></i>Design ' + designDays + 'd</span>'
       + '<span class="pd-tl-legend"><i style="background:' + c2 + '"></i>Manufacture ' + mfg + 'd</span>'
-      + (race ? '<span class="pd-tl-legend pd-tl-target">➜ ' + str(raceMeta(race.name).short) + ' ' + str(race.race_date).slice(0, 10) + '</span>' : '')
+      + (race ? '<span class="pd-tl-legend pd-tl-target">' + BTG.icon('arrow-right', 13) + ' ' + str(raceMeta(race.name).short) + ' ' + str(race.race_date).slice(0, 10) + '</span>' : '')
       + '</div>'
       + '<div class="pd-tl-track">'
       + '<div class="pd-tl-bar" style="left:0%; width:' + pct(designEnd) + '%; background:' + c1 + '"></div>'
@@ -1277,7 +1277,7 @@
         + '<span class="pd-tl-legend"><i style="background:' + c1 + '"></i>Development · Week ' + num(prog.weeks_elapsed) + '/' + num(prog.target_weeks) + '</span>'
         + '<span class="pd-tl-legend"><i style="background:' + c2 + '"></i>Manufacture ' + mfgDays + 'd</span>'
         + '<span class="pd-tl-legend">' + daysLeft + ' days left</span>'
-        + (race ? '<span class="pd-tl-legend pd-tl-target">➜ ' + str(raceMeta(race.name).short) + ' ' + str(race.race_date).slice(0, 10) + '</span>' : '')
+        + (race ? '<span class="pd-tl-legend pd-tl-target">' + BTG.icon('arrow-right', 13) + ' ' + str(raceMeta(race.name).short) + ' ' + str(race.race_date).slice(0, 10) + '</span>' : '')
         + '</div>'
         + '<div class="pd-tl-track">'
         + '<div class="pd-tl-bar" style="left:0%; width:' + designEndPct + '%; background:' + c1 + ';"></div>'

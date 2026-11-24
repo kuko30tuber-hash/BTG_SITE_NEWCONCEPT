@@ -327,7 +327,7 @@
         +     '<div class="cal-dates">' + weekendRange(x.raceDate) + '</div>'
         +   '</div>'
         +   '<div class="cal-fcard__bottom"><div class="cal-fcard__gp">' + BTG.esc(x.gp) + '</div>'
-        +     (x.winner ? '<div class="cal-fcard__gp">&#127942; ' + BTG.esc(x.winner) + '</div>' : '')
+        +     (x.winner ? '<div class="cal-fcard__gp">' + BTG.icon('trophy', 15) + ' ' + BTG.esc(x.winner) + '</div>' : '')
         +   '</div>'
         + '</a></div>';
     }).join('') + '</div>';
@@ -336,13 +336,13 @@
     var grid = '<div class="cal-grid">' + info.map(function (x) {
       var chip = x.live ? '<span class="cal-chip cal-chip--live">Live</span>'
         : (x.round - 1 === nextIdx ? '<span class="cal-chip cal-chip--next">Next race</span>'
-        : (x.done ? '<span class="cal-chip">&#127937; Finished</span>' : ''));
+        : (x.done ? '<span class="cal-chip">' + BTG.icon('finish', 13) + ' Finished</span>' : ''));
       var fmt = fmtIcon(x.r);
       if (fmt && !chip) chip = '<span class="cal-chip">' + fmt + ' Sprint</span>';
       var winner = x.winner
         ? '<div class="cal-winner"><span class="cal-winner__photo">' + (BTG.driverPhotoImg ? BTG.driverPhotoImg(x.winner, 34, '', activeSeason) : '') + '</span>'
           + '<span><div class="cal-winner__label">Winner</div><div class="cal-winner__name">' + BTG.esc(x.winner) + '</div></span>'
-          + '<span class="cal-winner__trophy">&#127942;</span></div>'
+          + '<span class="cal-winner__trophy">' + BTG.icon('trophy', 20) + '</span></div>'
         : '';
       return '<a class="cal-card' + (x.done ? ' cal-card--done' : '') + (x.round - 1 === nextIdx ? ' cal-card--next' : '') + '" href="' + weekendLink(x.round) + '">'
         + '<div class="cal-card__media"' + bgStyle(x) + '>' + chip + '</div>'

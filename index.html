@@ -303,18 +303,18 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
   <div class="hx-hero" id="home-hero"></div>
 
   <!-- Upcoming rounds -->
-  <div class="hx-head"><h2 class="hx-title" id="home-rounds-title">Upcoming rounds</h2><a class="hx-link" href="calendar.html">Full calendar &rarr;</a></div>
+  <div class="hx-head"><h2 class="hx-title" id="home-rounds-title">Upcoming rounds</h2><a class="hx-link" href="calendar.html">Full calendar <svg class="ic ic-arrow-right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a></div>
   <div class="hx-rounds" id="home-rounds"></div>
 
   <!-- Standings snapshot -->
-  <div class="hx-head"><h2 class="hx-title">Standings</h2><a class="hx-link" href="standings.html">Full standings &rarr;</a></div>
+  <div class="hx-head"><h2 class="hx-title">Standings</h2><a class="hx-link" href="standings.html">Full standings <svg class="ic ic-arrow-right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a></div>
   <div class="home-grid hx-snap">
     <div class="home-col">
-      <div class="home-col__head"><span class="home-col__title">Drivers</span><a class="home-col__link" href="standings.html">View all &rarr;</a></div>
+      <div class="home-col__head"><span class="home-col__title">Drivers</span><a class="home-col__link" href="standings.html">View all <svg class="ic ic-arrow-right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a></div>
       <div class="home-col__list" id="home-drivers"><div class="hx-empty">Loading…</div></div>
     </div>
     <div class="home-col">
-      <div class="home-col__head"><span class="home-col__title">Teams</span><a class="home-col__link" href="teams.html">View all &rarr;</a></div>
+      <div class="home-col__head"><span class="home-col__title">Teams</span><a class="home-col__link" href="teams.html">View all <svg class="ic ic-arrow-right" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a></div>
       <div class="home-col__list" id="home-teams"><div class="hx-empty">Loading…</div></div>
     </div>
   </div>
@@ -387,7 +387,7 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
 <!-- Driver Modal -->
 <div id="driver-modal" class="modal-overlay" onclick="BTG.bgClose(event,'driver-modal')">
   <div class="modal">
-    <button class="modal-close" onclick="BTG.closeModal('driver-modal')">&#10005;</button>
+    <button class="modal-close" onclick="BTG.closeModal('driver-modal')" aria-label="Close"><svg class="ic ic-x" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     <div class="modal-driver-team" id="modal-team"></div>
     <div class="modal-driver-name">
       <span class="modal-driver-flag" id="modal-flag"></span>
@@ -493,14 +493,14 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
     var lead = topDrivers[0];
     if (lead) {
       cards.push({
-        icon: '👑', iconCls: 'amber', title: 'Championship Leader',
+        icon: BTG.icon('crown', 22), iconCls: 'amber', title: 'Championship Leader',
         value: lead.fullName || lead.name, sub: (lead.standings ? lead.standings.pts : 0) + ' pts',
         photo: lead, team: lead.team
       });
     }
     if (topTeams[0]) {
       cards.push({
-        icon: '🏭', iconCls: 'sky', title: 'Constructors Leader',
+        icon: BTG.icon('factory', 22), iconCls: 'sky', title: 'Constructors Leader',
         value: topTeams[0].team, sub: topTeams[0].points + ' pts',
         isTeam: true, teamName: topTeams[0].team
       });
@@ -508,12 +508,12 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
     var topWin = topDrivers.slice().sort(function (a, b) { return (b.seasonStats ? b.seasonStats.wins : 0) - (a.seasonStats ? a.seasonStats.wins : 0); })[0];
     if (topWin && topWin.seasonStats && topWin.seasonStats.wins > 0) {
       cards.push({
-        icon: '🏆', iconCls: 'emerald', title: 'Most Race Wins',
+        icon: BTG.icon('trophy', 22), iconCls: 'emerald', title: 'Most Race Wins',
         value: topWin.fullName || topWin.name, sub: topWin.seasonStats.wins + ' victories',
         photo: topWin, team: topWin.team
       });
     } else {
-      cards.push({ icon: '⭐', iconCls: 'emerald', title: 'Drivers', value: (topDrivers.length || 0) + ' entered', sub: esc(activeSeries) + ' championship' });
+      cards.push({ icon: BTG.icon('users', 22), iconCls: 'emerald', title: 'Drivers', value: (topDrivers.length || 0) + ' entered', sub: esc(activeSeries) + ' championship' });
     }
     el.innerHTML = cards.map(function (c) {
       var media = '';
@@ -636,7 +636,7 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
                 + '<span class="hx-podium__name">' + esc(parts.slice(0, -1).join(' ')) + ' <b>' + esc(parts.slice(-1)[0]) + '</b></span>'
                 + '<span class="hx-podium__time">' + (p === 1 ? fmtTime(t) : (t > winT && winT > 0 ? '+' + (t - winT).toFixed(3) + 's' : '')) + '</span></span>';
             }).join('') + '</span>'
-        +   '<span class="hx-cta">Full result &rarr;</span>'
+        +   '<span class="hx-cta">Full result' + ' ' + BTG.icon('arrow-right', 14) + '</span>'
         + '</span>'
         + (win ? '<span class="hx-last__photo">' + BTG.driverPhotoImg(win.driver_name, 260, '', activeSeason) + '</span>' : '')
         + '</a>';
@@ -652,15 +652,15 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
         +   '<span class="hx-place">' + (info.next.flag ? '<img src="' + info.next.flag + '" alt="">' : '') + esc(info.next.place) + '</span>'
         +   '<span class="hx-gp">' + esc(info.next.gp) + '</span>'
         +   '<span class="hx-dates">' + esc(info.next.dates) + '</span>'
-        +   '<span class="hx-cta">Race weekend &rarr;</span>'
+        +   '<span class="hx-cta">Race weekend' + ' ' + BTG.icon('arrow-right', 14) + '</span>'
         + '</span></a>';
     } else if (info.list.length) {
       var champ = (topDrivers || [])[0];
       html += '<a class="hx-card hx-next" href="standings.html"><span class="hx-card__body">'
         + '<span class="hx-kicker">Season complete</span>'
-        + '<span class="hx-place">' + (champ ? '&#127942; ' + esc(champ.fullName || champ.name) : 'All rounds run') + '</span>'
+        + '<span class="hx-place">' + (champ ? BTG.icon('trophy', 18) + ' ' + esc(champ.fullName || champ.name) : 'All rounds run') + '</span>'
         + '<span class="hx-gp">' + esc(activeSeries) + ' ' + esc(activeSeason) + ' Champion</span>'
-        + '<span class="hx-cta">Final standings &rarr;</span></span></a>';
+        + '<span class="hx-cta">Final standings' + ' ' + BTG.icon('arrow-right', 14) + '</span></span></a>';
     }
     el.innerHTML = html;
     paintTrack(el.querySelector('.hx-next__photo'));
@@ -784,7 +784,7 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
       return '<div class="home-row" style="--team-rgb:' + rgb + '">'
         + '<span class="dp-picker__face">' + BTG.driverPhotoImg(full, 30, '', activeSeason) + '</span>'
         + '<span class="home-row__name" style="color:' + teamColorCss(d.team) + '">' + esc(full) + '</span>'
-        + '<span class="home-rec">' + (ss.wins ? '🏆' + ss.wins : '') + (ss.poles ? ' ⏱' + ss.poles : '') + (ss.podiums ? ' 🥉' + ss.podiums : '') + '</span>'
+        + '<span class="home-rec">' + (ss.wins ? '<span class="ic-txt" title="Wins">' + BTG.icon('trophy', 13) + ss.wins + '</span>' : '') + (ss.poles ? ' <span class="ic-txt" title="Poles">' + BTG.icon('timer', 13) + ss.poles + '</span>' : '') + (ss.podiums ? ' <span class="ic-txt" title="Podiums">' + BTG.icon('medal', 13) + ss.podiums + '</span>' : '') + '</span>'
         + '</div>';
     }).join('');
   }
@@ -1030,27 +1030,27 @@ span.home-row__logo { max-width: none !important; height: auto !important; white
     var lastRows = results.filter(function (r) { return String(r.race_id) === lastId; });
     var track = last.name || last.circuit || 'Grand Prix';
     var winner = lastRows.filter(function (r) { return Number(r.finish_position) === 1; })[0];
-    if (winner) news.push({ icon: '🏁', text: winner.driver_name + ' wins the ' + track });
+    if (winner) news.push({ icon: BTG.icon('finish', 15), text: winner.driver_name + ' wins the ' + track });
     // Big gainer
     var gainer = lastRows.map(function (r) {
       var g = (Number(r.grid_position) || 99) - (Number(r.finish_position) || 99);
       return { name: r.driver_name, gained: g };
     }).sort(function (a, b) { return b.gained - a.gained; })[0];
-    if (gainer && gainer.gained >= 5) news.push({ icon: '🔝', text: gainer.name + ' gained ' + gainer.gained + ' positions at ' + track });
+    if (gainer && gainer.gained >= 5) news.push({ icon: BTG.icon('trending-up', 15), text: gainer.name + ' gained ' + gainer.gained + ' positions at ' + track });
     // Pole
     var pole = lastRows.filter(function (r) { return Number(r.grid_position) === 1; })[0];
-    if (pole && winner && pole.driver_name !== winner.driver_name) news.push({ icon: '⏱', text: pole.driver_name + ' on pole for ' + track });
+    if (pole && winner && pole.driver_name !== winner.driver_name) news.push({ icon: BTG.icon('timer', 15), text: pole.driver_name + ' on pole for ' + track });
     // Sprint winner
     var sprints = (BTG.DBCache.data() || {}).race_sprints || [];
     var sWin = sprints.filter(function (s) { return String(s.race_id) === lastId && Number(s.finish_position) === 1; })[0];
-    if (sWin) news.push({ icon: '⚡', text: sWin.driver_name + ' won the ' + track + ' sprint' });
+    if (sWin) news.push({ icon: BTG.icon('zap', 15), text: sWin.driver_name + ' won the ' + track + ' sprint' });
     // Leader
     var lead = drivers.slice().sort(function (a, b) {
       var pa = (a.standings && a.standings.pos !== '—') ? Number(a.standings.pos) : 999;
       var pb = (b.standings && b.standings.pos !== '—') ? Number(b.standings.pos) : 999;
       return pa - pb;
     })[0];
-    if (lead) news.push({ icon: '👑', text: lead.name + ' leads the ' + esc(activeSeries) + ' championship' });
+    if (lead) news.push({ icon: BTG.icon('crown', 15), text: lead.name + ' leads the ' + esc(activeSeries) + ' championship' });
 
     if (!news.length) { el.innerHTML = '<div class="home-news"><div class="home-news__row">No news yet.</div></div>'; return; }
     el.innerHTML = '<div class="home-news">' + news.slice(0, 8).map(function (n) {

@@ -366,7 +366,7 @@ body::before {
     </div>
     <div id="detail-panel" class="dp-empty">Loading drivers…</div>
   </div>
-  <button class="dp-sidebar-toggle" id="sb-toggle" type="button">☰ Drivers</button>
+  <button class="dp-sidebar-toggle" id="sb-toggle" type="button"><svg class="ic ic-menu" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg> Drivers</button>
 </div>
 
 <div class="tfg-attrib">UI by <a href="https://www.patreon.com/c/TFGTools" target="_blank" rel="noopener">TFGTools</a></div>
@@ -799,7 +799,7 @@ body::before {
     html += '<div class="dp-card"><div class="dp-card__title">Season Stats</div>'
       + '<div class="dp-stats-grid">'
       + statCell(ss.races||'—','Races')+statCell(ss.avgFinish||'—','Avg Finish')+statCell(ss.wins||'—','Wins')+statCell(ss.avgGrid||'—','Avg Grid')
-      + statCell(ss.podiums||'—','Podiums')+statCell(ss.poles||'—','Poles')+statCell(ss.dnfs||'—','DNFs')+statCell('—','Pole→Win')
+      + statCell(ss.podiums||'—','Podiums')+statCell(ss.poles||'—','Poles')+statCell(ss.dnfs||'—','DNFs')+statCell('—','Pole to win')
       + '</div>'
       + '<div style="margin-top:10px"><div class="dp-card__subtitle">Sprint Races</div>'
       + '<div class="dp-stats-grid" style="grid-template-columns:repeat(4,1fr)">'
@@ -1370,7 +1370,7 @@ body::before {
       var sp = r.grid || 20, fp = r.pos || 20;
       var sy = ((sp - 1) / 19) * 80, fy = ((fp - 1) / 19) * 80;
       var label = abbreviate(r.track) || 'R' + (i+1);
-      return '<div class="dp-sparkline__race" title="'+BTG.esc(label)+': P'+sp+'→P'+fp+'">'
+      return '<div class="dp-sparkline__race" title="'+BTG.esc(label)+': started P'+sp+', finished P'+fp+'">'
         + '<div class="dp-sparkline__track">'
         + (!r.dnf ? '<div class="dp-sparkline__line" style="top:'+Math.min(sy,fy)+'px;height:'+(Math.abs(fy-sy)+3)+'px;background:rgb('+color+')"></div>' : '')
         + '<div class="dp-sparkline__dot" style="top:'+fy+'px;background:'+(r.dnf?'#ef4444':'#34d399')+'"></div>'
