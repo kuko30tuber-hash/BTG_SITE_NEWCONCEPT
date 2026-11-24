@@ -26,7 +26,7 @@
       num = p.numberImage ? '<img class="lp-num lp-num--img" src="' + esc(p.numberImage) + '" alt="' + esc(p.num) + '">'
         : '<span class="lp-num">' + esc(p.num) + '</span>';
     }
-    var photo = p.img ? '<img class="lp-photo" src="' + esc(p.img) + '" alt="" loading="lazy">' : '<span class="lp-photo lp-photo--empty"></span>';
+    var photo = '<img class="lp-photo" src="' + esc(p.img || BTG.TBA_PHOTO || 'logos/drivers/TBA.png') + '" alt="" loading="lazy">';
     var name = '<span class="lp-name"><small>' + esc(p.first || '') + '</small><b>' + esc(p.name || '') + '</b></span>';
     var flag = p.flag ? '<img class="lp-flag" src="' + esc(p.flag) + '" alt="">' : '';
     var inner = '<span class="lp-drv__fig">' + num + photo + '</span><span class="lp-drv__plate">' + flag + name + '</span>';

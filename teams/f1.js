@@ -624,7 +624,7 @@ BTG.driverPhotoImg = function(fullName, size, className, year) {
   var sizePx = size || 76;
   var cls = className || 'dp-hero__img';
   if (!bases.length) {
-    return '<span class="dp-hero__placeholder">?</span>';
+    return '<img class="' + cls + ' is-tba" src="' + BTG.TBA_PHOTO + '" width="' + sizePx + '" height="' + sizePx + '" alt="' + BTG.esc(fullName || '') + '">';
   }
   var urls = BTG.driverPhotoUrls(fullName, year);
   // Fast path: 256px webp thumbs (logos/drivers/thumbs/) first — the source
@@ -653,10 +653,13 @@ BTG.driverPhotoStep = function(el) {
  * Global fallback: replace a driver photo <img> with the "?" placeholder
  * when all candidate .webp/.png files were tried and failed.
  */
+BTG.TBA_PHOTO = 'logos/drivers/TBA.png';
 BTG.driverPhotoFail = function(el) {
-  if (!el || !el.parentNode) return;
-  var span = document.createElement('span');
-  span.className = 'dp-hero__placeholder';
-  span.textContent = '?';
-  el.parentNode.replaceChild(span, el);
+  if (!el) return;
+  // No photo found → the generic TBA driver silhouette (once, to avoid loops).
+  if (el.getAttribute('data-tba') === '1') { el.style.visibility = 'hidden'; return; }
+  el.setAttribute('data-tba', '1');
+  el.classList.add('is-tba');
+  el.removeAttribute('data-logos');
+  el.src = BTG.TBA_PHOTO;
 };
